@@ -209,7 +209,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             if let firstWarningTimestamp = data!["first_warning_timestamp"] as? Int {
                 self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
             }
-            Log.info("Connected to Backend sucesfully")
+/////////// Minor Text Edit (correct spelling of succesfully //////////////////
+            Log.info("Connected to Backend succesfully")
             
         }
         
@@ -1571,17 +1572,19 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                             } else {
                                 Log.error("Unkown Action: \(action)")
                             }
-                            
+//////////////// Changes for merge start here ///////////////////////////////
                             if self.emptyGmoCount >= self.config.maxEmptyGMO {
-                                Log.error("Got Emtpy GMO \(self.emptyGmoCount) times in a row. Restarting")
-                                self.app.terminate()
+                                Log.error("Emty GMO count: \(self.emptyGmoCount) Exceeds Max Empty GMO. Increase in device settings or check account status.")
+                                self.emptyGmoCount = 0
+                            // kick error to logs   self.app.terminate()
                             }
                             
                             if failedCount >= self.config.maxFailedCount {
-                                Log.error("Failed \(failedCount) times in a row. Restarting")
-                                self.app.terminate()
+                                Log.error("Failed count: \(failedCount) Exceeds Max Failed Count. Increase in device settings or check account status.")
+                                failedCount = 0
+                            // kick error to logs    self.app.terminate()
                             }
-                            
+///////////////// End of changes for merge //////////////////////////////
                         } else {
                             failedToGetJobCount = 0
                             Log.debug("no job left (Got result: \(result!)") // <- search harder, better, faster, stronger
