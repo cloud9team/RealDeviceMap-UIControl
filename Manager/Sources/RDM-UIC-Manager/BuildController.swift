@@ -139,6 +139,9 @@ class BuildController {
             }
             
             for device in devicesToAdd {
+                if device.enabled == 0 {
+                    continue
+                }
                 let queue = Threading.getQueue(name: "BuildController-\(device.uuid)", type: .serial)
                 activeDeviceLock.lock()
                 activeDevices.append(device)
@@ -168,7 +171,7 @@ class BuildController {
         let derivedDataPath = self.derivedDataPath + "/" + device.uuid
         
         let xcodebuild = Shell("xcodebuild", "test-without-building", "-workspace", "\(path)/RealDeviceMap-UIControl.xcworkspace", "-scheme", "RealDeviceMap-UIControl", "-destination", "id=\(device.uuid)", "-destination-timeout", "\(timeout * device.delayMultiplier)", "-derivedDataPath", derivedDataPath,
-            "name=\(device.name)", "backendURL=\(device.backendURL)", "enableAccountManager=\(device.enableAccountManager)", "port=\(device.port)", "pokemonMaxTime=\(device.pokemonMaxTime)", "raidMaxTime=\(device.raidMaxTime)", "maxWarningTimeRaid=\(device.maxWarningTimeRaid)", "delayMultiplier=\(device.delayMultiplier)", "jitterValue=\(device.jitterValue)", "targetMaxDistance=\(device.targetMaxDistance)", "itemFullCount=\(device.itemFullCount)", "questFullCount=\(device.questFullCount)", "itemsPerStop=\(device.itemsPerStop)", "minDelayLogout=\(device.minDelayLogout)", "maxNoQuestCount=\(device.maxNoQuestCount)", "maxFailedCount=\(device.maxFailedCount)", "maxEmptyGMO=\(device.maxEmptyGMO)", "startupLocationLat=\(device.startupLocationLat)", "startupLocationLon=\(device.startupLocationLon)", "encounterMaxWait=\(device.encounterMaxWait)", "encounterDelay=\(device.encounterDelay)", "fastIV=\(device.fastIV)", "ultraIV=\(device.ultraIV)", "deployEggs=\(device.deployEggs)"
+            "name=\(device.name)", "backendURL=\(device.backendURL)", "enableAccountManager=\(device.enableAccountManager)", "port=\(device.port)", "pokemonMaxTime=\(device.pokemonMaxTime)", "raidMaxTime=\(device.raidMaxTime)", "maxWarningTimeRaid=\(device.maxWarningTimeRaid)", "delayMultiplier=\(device.delayMultiplier)", "jitterValue=\(device.jitterValue)", "targetMaxDistance=\(device.targetMaxDistance)", "itemFullCount=\(device.itemFullCount)", "questFullCount=\(device.questFullCount)", "itemsPerStop=\(device.itemsPerStop)", "minDelayLogout=\(device.minDelayLogout)", "maxNoQuestCount=\(device.maxNoQuestCount)", "maxFailedCount=\(device.maxFailedCount)", "maxEmptyGMO=\(device.maxEmptyGMO)", "startupLocationLat=\(device.startupLocationLat)", "startupLocationLon=\(device.startupLocationLon)", "encounterMaxWait=\(device.encounterMaxWait)", "encounterDelay=\(device.encounterDelay)", "fastIV=\(device.fastIV)", "ultraIV=\(device.ultraIV)", "deployEggs=\(device.deployEggs)", "token=\(device.token)", "ultraQuests=\(device.ultraQuests)"
         )
 
         var contains = true
