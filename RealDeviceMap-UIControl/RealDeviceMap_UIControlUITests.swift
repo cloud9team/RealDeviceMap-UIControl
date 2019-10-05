@@ -28,6 +28,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var targetMaxDistance = 250.0
     var emptyGmoCount = 0
     var pokemonEncounterId: String?
+    var action: String?
     var pokemonEncounterIdForEncounter: String?
     var listScatterPokemon = false
     var scatterPokemon = [[String: Any]]()
@@ -735,7 +736,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     "lat": currentLocation!.lat + jitterLat,
                     "lng": currentLocation!.lon + jitterLon
                 ]
-            } else {
+
+                //"scan_iv", "scan_pokemon"
+                if (self.level >= 30) {
+                    responseData["actions"] = ["pokemon"]
+                } else {
+                    responseData["actions"] = []
+                }
+                
+            } else { //raids, quests
                 self.lock.unlock()
                 responseData = [
                     "latitude": currentLocation!.lat,
@@ -743,6 +752,24 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     "lat": currentLocation!.lat,
                     "lng": currentLocation!.lon
                 ]
+                if (self.config.ultraQuests == true && self.action == "scan_quest") {
+                    //autospinning should happen only when ultraQuests is set and the instance is scan_quest type
+                    if (self.level >= 30) {
+                        responseData["actions"] = ["pokemon", "pokestop"]
+                    } else {
+                        responseData["actions"] = ["pokestop"]
+                    }
+                } else if (self.config.ultraQuests == false && self.action == "scan_quest") {
+                    //autospinning should happen only when ultraQuests is set and the instance is scan_quest type
+                    if (self.level >= 30) {
+                        responseData["actions"] = ["pokemon"]
+                    } else {
+                        responseData["actions"] = []
+                    }
+                } else if (self.action == "scan_raid") {
+                    //raid instances don't need IV encounters. Use scan_pokemon type if you want to encounter while scanning raids.
+                    responseData["actions"] = []
+                }
             }
         } else {
             self.lock.unlock()
@@ -889,7 +916,21 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
         
         let server = Server()
-        try! server.start(onPort: UInt16(self.config.port))
+        var started = false
+        var startTryCount = 1
+        while !started {
+            do {
+                try server.start(onPort: UInt16(self.config.port))
+                started = true
+            } catch {
+                if startTryCount > 5 {
+                    fatalError("Failed to start server: \(error). Try (\(startTryCount)/5).")
+                }
+                Log.error("Failed to start server: \(error). Try (\(startTryCount)/5). Trying again in 5s.")
+                startTryCount += 1
+                sleep(5)
+            }
+        }
         server.route(.get, "loc", handleLocRequest)
         server.route(.post, "loc", handleLocRequest)
         server.route(.get, "data", handleDataRequest)
@@ -904,6 +945,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(15)
                 self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "heartbeat"]) { (cake) in /* The cake is a lie! */ }
             }
+            Log.info("Force-Stopping HTTP Server")
+            server.stop(immediately: true)
         }
         
         // Stop Heartbeat if we exit the scope
@@ -988,23 +1031,24 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     sleep(1 * config.delayMultiplier)
                     self.freeScreen()
                     sleep(1 * config.delayMultiplier)
-                    if zoomedOut {
-                        deviceConfig.startup.toXCUICoordinate(app: app).tap()
-                        app.swipeUp()
-                        deviceConfig.startup.toXCUICoordinate(app: app).tap()
-                        app.swipeUp()
-                        deviceConfig.startup.toXCUICoordinate(app: app).tap()
-                        app.swipeUp()
-                    } else {
-                        deviceConfig.startup.toXCUICoordinate(app: app).tap()
-                        app.swipeDown()
-                        deviceConfig.startup.toXCUICoordinate(app: app).tap()
-                        app.swipeDown()
-                        deviceConfig.startup.toXCUICoordinate(app: app).tap()
-                        app.swipeDown()
+                    if !self.config.ultraQuests {
+                        if zoomedOut {
+                            deviceConfig.startup.toXCUICoordinate(app: app).tap()
+                            app.swipeUp()
+                            deviceConfig.startup.toXCUICoordinate(app: app).tap()
+                            app.swipeUp()
+                            deviceConfig.startup.toXCUICoordinate(app: app).tap()
+                            app.swipeUp()
+                        } else {
+                            deviceConfig.startup.toXCUICoordinate(app: app).tap()
+                            app.swipeDown()
+                            deviceConfig.startup.toXCUICoordinate(app: app).tap()
+                            app.swipeDown()
+                            deviceConfig.startup.toXCUICoordinate(app: app).tap()
+                            app.swipeDown()
+                        }
+                        sleep(1 * config.delayMultiplier)
                     }
-                    sleep(1 * config.delayMultiplier)
-                    
                     isStartupCompleted = true
                     
                     if self.needsLogout {
@@ -1060,6 +1104,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         failedToGetJobCount = 0
                         
                         if let data = result!["data"] as? [String: Any], let action = data["action"] as? String {
+                            self.action = action
                             if action == "scan_pokemon" {
                                 print("[STATUS] Pokemon")
                                 if hasWarning && self.config.enableAccountManager {
@@ -1171,8 +1216,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 let lon = data["lon"] as? Double ?? 0
                                 let delay = data["delay"] as? Double ?? 0
                                 Log.debug("Scanning for Quest at \(lat) \(lon) in \(Int(delay))s")
-                                
-                                self.zoom(out: false, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
+                                if (!self.config.ultraQuests) {
+                                    self.zoom(out: false, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
+                                }
                                 
                                 if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
                                     Log.info("Account has a warning and is over maxWarningTimeRaid. Logging out!")
@@ -1206,25 +1252,25 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.shouldExit = true
                                     return
                                 }
-                                
-                                if currentItems >= self.config.itemFullCount && !self.newCreated {
-                                    self.freeScreen()
-                                    Log.debug("Clearing Items")
-                                    self.clearItems()
-                                    currentItems = 2
-                                } else {
-                                    sleep(1)
+                                if (!self.config.ultraQuests) {
+                                    if currentItems >= self.config.itemFullCount && !self.newCreated {
+                                        self.freeScreen()
+                                        Log.debug("Clearing Items")
+                                        self.clearItems()
+                                        currentItems = 2
+                                    } else {
+                                        sleep(1)
+                                    }
+                                    
+                                    if currentQuests >= self.config.questFullCount && !self.newCreated {
+                                        self.freeScreen()
+                                        Log.debug("Clearing Quests")
+                                        self.clearQuest()
+                                        currentQuests = 0
+                                    } else {
+                                        sleep(1)
+                                    }
                                 }
-                                
-                                if currentQuests >= self.config.questFullCount && !self.newCreated {
-                                    self.freeScreen()
-                                    Log.debug("Clearing Quests")
-                                    self.clearQuest()
-                                    currentQuests = 0
-                                } else {
-                                    sleep(1)
-                                }
-                                
                                 self.newCreated = false
                                 
                                 self.lock.lock()
@@ -1289,28 +1335,45 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     return
                                 }
                                 self.lock.unlock()
-                                
-                                if success {
-                                    self.freeScreen()
-                                    Log.debug("Spinning Pokestop")
-                                    var attempts = 0
-                                    self.spin()
-                                    while (attempts < 5){
-                                        attempts += 1
-                                        self.lock.lock()
-                                        if !self.gotQuest {
-                                            self.lock.unlock()
-                                            usleep(100000 * self.config.delayMultiplier)
-                                            self.freeScreen()
-                                            self.app.swipeLeft()
-                                            self.spin()
-                                        } else {
-                                            self.lock.unlock()
-                                            break
+                                if (!self.config.ultraQuests) {
+                                    if success {
+                                        self.freeScreen()
+                                        Log.debug("Spinning Pokestop")
+                                        var attempts = 0
+                                        self.spin()
+                                        while (attempts < 5){
+                                            attempts += 1
+                                            self.lock.lock()
+                                            if !self.gotQuest {
+                                                self.lock.unlock()
+                                                usleep(100000 * self.config.delayMultiplier)
+                                                self.freeScreen()
+                                                self.app.swipeLeft()
+                                                self.spin()
+                                            } else {
+                                                self.lock.unlock()
+                                                break
+                                            }
+                                        }
+                                        currentQuests += 1
+                                        currentItems += self.config.itemsPerStop
+                                    }
+                                }
+                                else {
+                                    if success {
+                                        var attempts = 0
+                                        while (attempts < 5){
+                                            attempts += 1
+                                            self.lock.lock()
+                                            if !self.gotQuest {
+                                                self.lock.unlock()
+                                                sleep(1 * self.config.delayMultiplier)
+                                            } else {
+                                                self.lock.unlock()
+                                                break
+                                            }
                                         }
                                     }
-                                    currentQuests += 1
-                                    currentItems += self.config.itemsPerStop
                                 }
                                 
                             } else if action == "switch_account" {
@@ -1574,15 +1637,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                             }
 //////////////// Changes for merge start here ///////////////////////////////
                             if self.emptyGmoCount >= self.config.maxEmptyGMO {
-                                Log.error("Emty GMO count: \(self.emptyGmoCount) Exceeds Max Empty GMO. Increase in device settings or check account status.")
+                                Log.error("Exceeded Emtpy GMO Count \(self.emptyGmoCount). Increase Max Empty Gmo or Check Accouunt Status.")
                                 self.emptyGmoCount = 0
-                            // kick error to logs   self.app.terminate()
+                            // Reset Counter. kick error to logs/don't kill app    self.app.terminate()
                             }
                             
                             if failedCount >= self.config.maxFailedCount {
-                                Log.error("Failed count: \(failedCount) Exceeds Max Failed Count. Increase in device settings or check account status.")
+                                Log.error("Exceeded Failed Count  \(failedCount). Increase Max Failed Count or Check Accouunt Status.")
                                 failedCount = 0
-                            // kick error to logs    self.app.terminate()
+                            // Reset Counter. kick error to logs/don't kill app                                    self.app.terminate()
                             }
 ///////////////// End of changes for merge //////////////////////////////
                         } else {

@@ -35,6 +35,9 @@ class Config {
     var fastIV: Bool
     var ultraIV: Bool
     var deployEggs: Bool
+    var token: String
+    var ultraQuests: Bool
+    var enabled: Bool
     
     init() {
         
@@ -66,6 +69,9 @@ class Config {
         fastIV = enviroment["fastIV"]?.toBool() ?? false
         ultraIV = enviroment["ultraIV"]?.toBool() ?? false
         deployEggs = enviroment["deployEggs"]?.toBool() ?? false
+        token = enviroment["token"] ?? ""
+        ultraQuests = enviroment["ultraQuests"]?.toBool() ?? false
+        enabled = enviroment["enabled"]?.toBool() ?? true
     }
     
 }
