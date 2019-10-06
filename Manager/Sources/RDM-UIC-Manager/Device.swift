@@ -24,6 +24,8 @@ class Device: SQLiteStORM, Equatable, Hashable {
     
     var uuid: String
     var name: String
+    var enabled: Int
+    var token: String
     var backendURL: String
     var enableAccountManager: Int
     var port: Int
@@ -46,14 +48,15 @@ class Device: SQLiteStORM, Equatable, Hashable {
     var encounterDelay: Double
     var fastIV: Int
     var ultraIV: Int
-    var deployEggs: Int
-    var token: String
     var ultraQuests: Int
-    var enabled: Int
+    var deployEggs: Int
+
     
     override init() {
         self.uuid = ""
         self.name = ""
+        self.enabled = 1
+        self.token = ""
         self.backendURL = ""
         self.enableAccountManager = 0
         self.port = 8080
@@ -76,16 +79,17 @@ class Device: SQLiteStORM, Equatable, Hashable {
         self.encounterDelay = 1.0
         self.fastIV = 0
         self.ultraIV = 0
+        self.ultraQuests = 0
         self.deployEggs = 0
-        self.token = ""
-	self.ultraQuests = 0
-        self.enabled = 1
+        
         super.init()
     }
     
-    init(uuid: String, name: String, backendURL: String, enableAccountManager: Int, port: Int, pokemonMaxTime: Double, raidMaxTime: Double, maxWarningTimeRaid: Int, delayMultiplier: Int, jitterValue: Double, targetMaxDistance: Double, itemFullCount: Int, questFullCount: Int, itemsPerStop: Int, minDelayLogout: Double, maxNoQuestCount: Int, maxFailedCount: Int, maxEmptyGMO: Int, startupLocationLat: Double, startupLocationLon: Double, encounterMaxWait: Int, encounterDelay: Double, fastIV: Int, ultraIV: Int, deployEggs: Int, token: String, ultraQuests: Int, enabled: Int) {
+    init(uuid: String, name: String, enabled: Int, token: String, backendURL: String, enableAccountManager: Int, port: Int, pokemonMaxTime: Double, raidMaxTime: Double, maxWarningTimeRaid: Int, delayMultiplier: Int, jitterValue: Double, targetMaxDistance: Double, itemFullCount: Int, questFullCount: Int, itemsPerStop: Int, minDelayLogout: Double, maxNoQuestCount: Int, maxFailedCount: Int, maxEmptyGMO: Int, startupLocationLat: Double, startupLocationLon: Double, encounterMaxWait: Int, encounterDelay: Double, fastIV: Int, ultraIV: Int, ultraQuests: Int, deployEggs: Int) {
         self.uuid = uuid
         self.name = name
+        self.enabled = enabled
+        self.token = token
         self.backendURL = backendURL
         self.enableAccountManager = enableAccountManager
         self.port = port
@@ -108,10 +112,9 @@ class Device: SQLiteStORM, Equatable, Hashable {
         self.encounterDelay = encounterDelay
         self.fastIV = fastIV
         self.ultraIV = ultraIV
-        self.deployEggs = deployEggs
-        self.token = token
         self.ultraQuests = ultraQuests
-        self.enabled = enabled
+        self.deployEggs = deployEggs
+        
         super.init()
     }
     
@@ -122,6 +125,8 @@ class Device: SQLiteStORM, Equatable, Hashable {
     override func to(_ this: StORMRow) {
         uuid = this.data["uuid"] as? String ?? ""
         name = this.data["name"] as? String ?? ""
+        enabled = this.data["enabled"] as? Int ?? 1
+        token = this.data["token"] as? String ?? ""
         backendURL = this.data["backendURL"] as? String ?? ""
         enableAccountManager = this.data["enableAccountManager"] as? Int ?? 0
         port = this.data["port"] as? Int ?? 8080
@@ -144,10 +149,9 @@ class Device: SQLiteStORM, Equatable, Hashable {
         encounterDelay = this.data["encounterDelay"] as? Double ?? 1.0
         fastIV = this.data["fastIV"] as? Int ?? 0
         ultraIV = this.data["ultraIV"] as? Int ?? 0
+        ultraQuests = this.data["ultraQuests"] as? Int ?? 0
         deployEggs = this.data["deployEggs"] as? Int ?? 0
-        token = this.data["token"] as? String ?? ""
-	ultraQuests = this.data["ultraQuests"] as? Int ?? 0
-        enabled = this.data["enabled"] as? Int ?? 1
+
     }
     
     static func getAll() -> [Device] {
@@ -193,42 +197,54 @@ class Device: SQLiteStORM, Equatable, Hashable {
     override func setup() throws {
         try super.setup()
         
+        var hasEnabled = false
+        var hasToken = false
         var hasFastIV = false
         var hasUltraIV = false
+        var hasUltraQuests = false
         var hasDeployEggs = false
         var hasEncounterMaxWait = false
         var hasEncounterDelay = false
-        var hasToken = false
-	var hasUltraQuests = false
-        var hasEnabled = false
+        
         
         let rows = try sqlRows("PRAGMA table_info(\(table()))", params: [String]())
         for row in rows {
             let name = row.data["name"] as! String
-            if name == "fastIV" {
+
+            if name == "enabled" {
+                hasEnabled = true
+            } else if name == "token" {
+                hasToken = true
+            } else if name == "fastIV" {
                 hasFastIV = true
             } else if name == "ultraIV" {
                 hasUltraIV = true
+            } else if name == "ultraQuests" {
+                hasUltraQuests = true
             } else if name == "deployEggs" {
                 hasDeployEggs = true
             } else if name == "encounterMaxWait" {
                 hasEncounterMaxWait = true
             } else if name == "encounterDelay" {
                 hasEncounterDelay = true
-            } else if name == "token" {
-                hasToken = true
-            } else if name == "ultraQuests" {
-                hasUltraQuests = true
-            } else if name == "enabled" {
-                hasEnabled = true
             }
         }
         
+        
+        if !hasEnabled {
+            try sqlExec("ALTER TABLE \(table()) ADD COLUMN enabled INTEGER DEFAULT 1")
+        }
+        if !hasToken {
+            try sqlExec("ALTER TABLE \(table()) ADD COLUMN token STRING DEFAULT NULL")
+        }
         if !hasFastIV {
             try sqlExec("ALTER TABLE \(table()) ADD COLUMN fastIV INTEGER DEFAULT 0")
         }
         if !hasUltraIV {
             try sqlExec("ALTER TABLE \(table()) ADD COLUMN ultraIV INTEGER DEFAULT 0")
+        }
+        if !hasUltraQuests {
+            try sqlExec("ALTER TABLE \(table()) ADD COLUMN ultraQuests INTEGER DEFAULT 0")
         }
         if !hasDeployEggs {
             try sqlExec("ALTER TABLE \(table()) ADD COLUMN deployEggs INTEGER DEFAULT 0")
@@ -239,15 +255,7 @@ class Device: SQLiteStORM, Equatable, Hashable {
         if !hasEncounterDelay {
             try sqlExec("ALTER TABLE \(table()) ADD COLUMN encounterDelay DOUBLE DEFAULT 1.0")
         }
-        if !hasToken {
-            try sqlExec("ALTER TABLE \(table()) ADD COLUMN token STRING DEFAULT NULL")
-        }
-        if !hasUltraQuests {
-            try sqlExec("ALTER TABLE \(table()) ADD COLUMN ultraQuests INTEGER DEFAULT 0")
-        }
-        if !hasEnabled {
-            try sqlExec("ALTER TABLE \(table()) ADD COLUMN enabled INTEGER DEFAULT 1")
-        }
+        
     }
     
 }

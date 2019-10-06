@@ -97,7 +97,7 @@ extension XCTestCase {
         var resultDict: [String: Any]?
         let jsonData = try! JSONSerialization.data(withJSONObject: data)
         
-        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 20)
         request.httpMethod = "POST"
         request.httpBody = jsonData
         if config.token != "" {
@@ -105,9 +105,21 @@ extension XCTestCase {
         }
         
         let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
+            if let response = response {
+                let nsHTTPResponse = response as! HTTPURLResponse
+                let statusCode = nsHTTPResponse.statusCode
+               Log.debug("status code = \(statusCode)")
+            }
+            if let error = error {
+               Log.debug("\(error)")
+            }
             if let data = data {
-                let resultJSON = try? JSONSerialization.jsonObject(with: data)
-                resultDict = resultJSON as? [String: Any]
+                do{
+                    let resultJSON = try? JSONSerialization.jsonObject(with: data)
+                    resultDict = resultJSON as? [String: Any]
+                } catch _ {
+                    Log.debug("Json response Error")
+                }
                 if !blocking {
                     completion(resultDict)
                 }

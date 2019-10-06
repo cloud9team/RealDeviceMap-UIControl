@@ -21,6 +21,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var lock = NSLock()
     var firstWarningDate: Date?
     var jitterCorner = 0
+    var questCount = 0
     var gotQuest = false
     var gotIV = false
     var noQuestCount = 0
@@ -1007,6 +1008,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             
             if isStarted {
                 if !isStartupCompleted {
+                    
                     Log.debug("Performing Startup sequence")
                     currentLocation = config.startupLocation
                     deviceConfig.startup.toXCUICoordinate(app: app).tap()
@@ -1148,6 +1150,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         self.freeScreen()
                                         Log.debug("Pokemon loading timed out.")
                                         self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
+                                        var Nsecond = 0
+                                        while !(result != nil) {
+                                            Nsecond += 1
+                                            Log.debug("waiting \(Nsecond) for response.")
+                                        
+                                        }
                                     } else {
                                         locked = self.waitForData
                                         if !locked {
@@ -1214,8 +1222,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
-                                let delay = data["delay"] as? Double ?? 0
-                                Log.debug("Scanning for Quest at \(lat) \(lon) in \(Int(delay))s")
+                                let delayb = data["delay"] as? Double ?? 0
+                                let wait = 36.0
+                                Log.debug("Scanning for Quest at \(lat) \(lon)")
                                 if (!self.config.ultraQuests) {
                                     self.zoom(out: false, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
                                 }
@@ -1236,7 +1245,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     return
                                 }
                                 
-                                if delay >= self.config.minDelayLogout && self.config.enableAccountManager {
+                                if delayb >= self.config.minDelayLogout && self.config.enableAccountManager {
                                     Log.debug("Switching account. Delay too large.")
                                     let success = self.logOut()
                                     if !success {
@@ -1274,30 +1283,54 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.newCreated = false
                                 
                                 self.lock.lock()
+                                let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude:
+                                    self.currentLocation!.lon)
+
                                 self.currentLocation = (lat, lon)
+                                let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
+                                self.encounterDistance = newLocation.distance(from: oldLocation)
                                 self.waitRequiresPokemon = false
                                 self.pokemonEncounterId = nil
                                 self.targetMaxDistance = self.config.targetMaxDistance
                                 self.waitForData = true
                                 self.lock.unlock()
                                 Log.debug("Scanning prepared")
+                                self.lock.lock()
+                                let cooldown = 120.0
+                                if self.questCount != 0 {
+                                    let cooldown = round(self.encounterDistance / 60)
+                                }
+                                let delay = (wait + cooldown)
+                                self.lock.unlock()
                                 if (!self.config.ultraQuests) {
                                     self.freeScreen()
                                     self.app.swipeLeft()
                                 }
-                               let start = Date()
-                                    
+                                let start = Date()
+                                
+                                
+                                
+                                
                                 var success = false
                                 var locked = true
+                                Log.debug("Traveled \(self.encounterDistance) Delaying by \(delay)s. ")
                                 while locked {
-//                                   usleep(100000 * self.config.delayMultiplier)
-//                                    if Date().timeIntervalSince(start) <= 5 {
-//                                        continue
-//                                    }
-                                    if Date().timeIntervalSince(start) <= delay {
+                                   usleep(100000 * self.config.delayMultiplier)
+                                    if self.encounterDistance <= 40.0 && self.questCount != 0  {
+                                        Log.debug("Already Got Quest")
+                                        self.gotQuest = true
+                                    }
+                                    if !self.gotQuest {
                                         let left =  delay - Date().timeIntervalSince(start)
-                                        Log.debug("Delaying by \(left)s.")
-                                        usleep(UInt32(min(10.0, left) * 1000000.0))
+                                        if left <= 1.0 {
+                                            Log.debug("COOLDOWN EXPIRED")
+                                            self.waitForData = false
+                                            
+                                            self.shouldExit = true
+                                            return
+                                        }
+                                        Log.debug("Delaying by \(left)s")
+                                        usleep(UInt32(min(3.0, left) * 1000000.0))
                                         continue
                                     }
                                     self.lock.lock()
@@ -1321,9 +1354,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 // Check if previus spin had quest data
                                 self.lock.lock()
                                 if self.gotQuest {
+                                    self.questCount += 1
                                     self.noQuestCount = 0
+                                    Log.debug("Got Quest at \(lat), \(lon) - Quest Count: \(self.questCount)")
                                 } else {
                                     self.noQuestCount += 1
+                                    Log.debug("Got Quest at \(lat), \(lon) - Missed Count: \(self.noQuestCount)")
                                 }
                                 self.gotQuest = false
                                 

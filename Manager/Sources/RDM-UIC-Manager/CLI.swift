@@ -139,6 +139,8 @@ class CLI {
             let row = """
             UUID: \(device.uuid)
             Name: \(device.name)
+            Enabled: \(device.enabled.toBool())
+            token: \(device.token)
             Backend URL: \(device.backendURL)
             EnableAccountManager: \(device.enableAccountManager.toBool())
             Port: \(device.port)
@@ -161,10 +163,8 @@ class CLI {
             Encounter Delay: \(device.encounterDelay)
             Fast IV: \(device.fastIV.toBool())
             Ultra IV: \(device.ultraIV.toBool())
-            deployEggs: \(device.deployEggs.toBool())
-            token: \(device.token)
             Ultra Quests: \(device.ultraQuests.toBool())
-            Enabled: \(device.enabled.toBool())
+            deployEggs: \(device.deployEggs.toBool())
             """
             
             print(row + "\n")
@@ -180,6 +180,16 @@ class CLI {
         let backendURL = askInput("Default Backend URL (empty = \(defaultDevice.backendURL))")
         if backendURL != "" {
             defaultDevice.backendURL = backendURL
+        }
+        
+        let enabled = askBool("Enabled (empty = \(defaultDevice.enabled.toBool()))")
+        if enabled != nil {
+            defaultDevice.enabled = enabled!.toInt()
+        }
+
+        let token = askInput("Token (empy = \(defaultDevice.token))")
+        if token != "" {
+            defaultDevice.token = token
         }
         
         let enableAccountManager = askBool("Enable Account Manager (empty = \(defaultDevice.enableAccountManager.toBool()))")
@@ -286,26 +296,18 @@ class CLI {
         if ultraIV != nil {
             defaultDevice.ultraIV = ultraIV!.toInt()
         }
-        
-        let deployEggs = askBool("Deploy Eggs (empy = \(defaultDevice.deployEggs.toBool()))")
-        if deployEggs != nil {
-            defaultDevice.deployEggs = deployEggs!.toInt()
-        }
-        
-        let enabled = askBool("Enabled (empty = \(defaultDevice.enabled.toBool()))")
-        if enabled != nil {
-            defaultDevice.enabled = enabled!.toInt()
-        }
 
         let ultraQuests = askBool("Ultra Quests (empty = \(defaultDevice.ultraQuests.toBool()))")
         if ultraQuests != nil {
             defaultDevice.ultraQuests = ultraQuests!.toInt()
         }
-
-        let token = askInput("Token (empy = \(defaultDevice.token))")
-        if token != "" {
-            defaultDevice.token = token
+        
+        let deployEggs = askBool("Deploy Eggs (empy = \(defaultDevice.deployEggs.toBool()))")
+        if deployEggs != nil {
+            defaultDevice.deployEggs = deployEggs!.toInt()
         }
+
+
 
         do {
             try defaultDevice.save()
@@ -325,11 +327,23 @@ class CLI {
             clear()
             return
         }
+        
         let name = askInput("Device Name")
         var backendURL = askInput("Backend URL (empty = \(defaultDevice.backendURL))")
         if backendURL == "" {
             backendURL = defaultDevice.backendURL
         }
+        
+        var enabled = askBool("Enabled (empty = \(defaultDevice.enabled.toBool()))")?.toInt()
+        if enabled == nil {
+            enabled = defaultDevice.enabled
+        }
+        
+        var token = askInput("Token (empy = \(defaultDevice.token))")
+        if token == "" {
+            token = defaultDevice.token
+        }
+        
         var enableAccountManager = askBool("Enable Account Manager (empty = \(defaultDevice.enableAccountManager.toBool()))")?.toInt()
         if enableAccountManager == nil {
             enableAccountManager = defaultDevice.enableAccountManager
@@ -434,27 +448,21 @@ class CLI {
             ultraIV = defaultDevice.ultraIV
         }
 
+        var ultraQuests = askBool("Ultra Quests (empty = \(defaultDevice.ultraQuests.toBool()))")?.toInt()
+        if ultraQuests == nil {
+            ultraQuests = defaultDevice.ultraQuests
+        }
+        
         var deployEggs = askBool("Deploy Eggs (empty = \(defaultDevice.deployEggs.toBool()))")?.toInt()
         if deployEggs == nil {
             deployEggs = defaultDevice.deployEggs
         }
         
-        var token = askInput("Token (empy = \(defaultDevice.token))")
-        if token == "" {
-            token = defaultDevice.token
-        }
-        
-        var ultraQuests = askBool("Ultra Quests (empty = \(defaultDevice.ultraQuests.toBool()))")?.toInt()
-        if ultraQuests == nil {
-            ultraQuests = defaultDevice.ultraQuests
-        }
-        var enabled = askBool("Enabled (empty = \(defaultDevice.enabled.toBool()))")?.toInt()
-        if enabled == nil {
-            enabled = defaultDevice.enabled
-        }
         
         device.uuid = uuid
         device.name = name
+        device.enabled = enabled!
+        device.token = token
         device.backendURL = backendURL
         device.enableAccountManager = enableAccountManager!
         device.port = port!
@@ -477,11 +485,9 @@ class CLI {
         device.encounterDelay = encounterDelay!
         device.fastIV = fastIV!
         device.ultraIV = ultraIV!
-        device.deployEggs = deployEggs!
-        device.token = token
         device.ultraQuests = ultraQuests!
-        device.enabled = enabled!
-
+        device.deployEggs = deployEggs!
+        
         do {
             try device.create()
             clear()
@@ -518,6 +524,17 @@ class CLI {
         if name != "" {
             device.name = name
         }
+        
+        let enabled = askBool("Enabled (empty = \(device.enabled.toBool()))")
+        if enabled != nil {
+            device.enabled = enabled!.toInt()
+        }
+        
+        let token = askInput("Token (empy = \(defaultDevice.token))")
+        if token != "" {
+            device.token = token
+        }
+        
         let backendURL = askInput("Backend URL (empty = \(device.backendURL))")
         if backendURL != "" {
             device.backendURL = backendURL
@@ -627,25 +644,20 @@ class CLI {
         if ultraIV != nil {
             device.ultraIV = ultraIV!.toInt()
         }
+        
+        let ultraQuests = askBool("Ultra Quests (empty = \(device.ultraQuests.toBool()))")
+        if ultraQuests != nil {
+            device.ultraQuests = ultraQuests!.toInt()
+        }
 
         let deployEggs = askBool("Deploy Eggs (empty = \(device.deployEggs.toBool()))")
         if deployEggs != nil {
             device.deployEggs = deployEggs!.toInt()
         }
-        
-        let token = askInput("Token (empy = \(defaultDevice.token))")
-        if token != "" {
-            device.token = token
-        }
+
 		
-        let ultraQuests = askBool("Ultra Quests (empty = \(device.ultraQuests.toBool()))")
-        if ultraQuests != nil {
-            device.ultraQuests = ultraQuests!.toInt()
-        }
-        let enabled = askBool("Enabled (empty = \(device.enabled.toBool()))")
-        if enabled != nil {
-            device.enabled = enabled!.toInt()
-        }
+       
+        
         
         do {
             try device.save()
