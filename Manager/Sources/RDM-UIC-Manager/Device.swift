@@ -83,7 +83,7 @@ class Device: SQLiteStORM, Equatable, Hashable {
         super.init()
     }
     
-    init(uuid: String, name: String, backendURL: String, enableAccountManager: Int, port: Int, pokemonMaxTime: Double, raidMaxTime: Double, maxWarningTimeRaid: Int, delayMultiplier: Int, jitterValue: Double, targetMaxDistance: Double, itemFullCount: Int, questFullCount: Int, itemsPerStop: Int, minDelayLogout: Double, maxNoQuestCount: Int, maxFailedCount: Int, maxEmptyGMO: Int, startupLocationLat: Double, startupLocationLon: Double, encounterMaxWait: Int, encounterDelay: Double, fastIV: Int, ultraIV: Int, deployEggs: Int, token: String, ultraQuests: Int enabled: Int) {
+    init(uuid: String, name: String, backendURL: String, enableAccountManager: Int, port: Int, pokemonMaxTime: Double, raidMaxTime: Double, maxWarningTimeRaid: Int, delayMultiplier: Int, jitterValue: Double, targetMaxDistance: Double, itemFullCount: Int, questFullCount: Int, itemsPerStop: Int, minDelayLogout: Double, maxNoQuestCount: Int, maxFailedCount: Int, maxEmptyGMO: Int, startupLocationLat: Double, startupLocationLon: Double, encounterMaxWait: Int, encounterDelay: Double, fastIV: Int, ultraIV: Int, deployEggs: Int, token: String, ultraQuests: Int, enabled: Int) {
         self.uuid = uuid
         self.name = name
         self.backendURL = backendURL

@@ -931,10 +931,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(5)
             }
         }
-        server.route(.get, "loc", handleLocRequest)
-        server.route(.post, "loc", handleLocRequest)
-        server.route(.get, "data", handleDataRequest)
-        server.route(.post, "data", handleDataRequest)
+        server.route(HTTPMethod.GET, "loc", handleLocRequest)
+        server.route(HTTPMethod.POST, "loc", handleLocRequest)
+        server.route(HTTPMethod.GET, "data", handleDataRequest)
+        server.route(HTTPMethod.POST, "data", handleDataRequest)
     
         Log.info("Server running at localhost:\(config.port)")
         
@@ -1281,19 +1281,19 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.waitForData = true
                                 self.lock.unlock()
                                 Log.debug("Scanning prepared")
-                                self.freeScreen()
-                                
-                                let start = Date()
-                                
-                                self.app.swipeLeft()
-                                
+                                if (!self.config.ultraQuests) {
+                                    self.freeScreen()
+                                    self.app.swipeLeft()
+                                }
+                               let start = Date()
+                                    
                                 var success = false
                                 var locked = true
                                 while locked {
-                                    usleep(100000 * self.config.delayMultiplier)
-                                    if Date().timeIntervalSince(start) <= 5 {
-                                        continue
-                                    }
+//                                   usleep(100000 * self.config.delayMultiplier)
+//                                    if Date().timeIntervalSince(start) <= 5 {
+//                                        continue
+//                                    }
                                     if Date().timeIntervalSince(start) <= delay {
                                         let left =  delay - Date().timeIntervalSince(start)
                                         Log.debug("Delaying by \(left)s.")
@@ -1359,23 +1359,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         currentItems += self.config.itemsPerStop
                                     }
                                 }
-                                else {
-                                    if success {
-                                        var attempts = 0
-                                        while (attempts < 5){
-                                            attempts += 1
-                                            self.lock.lock()
-                                            if !self.gotQuest {
-                                                self.lock.unlock()
-                                                sleep(1 * self.config.delayMultiplier)
-                                            } else {
-                                                self.lock.unlock()
-                                                break
-                                            }
-                                        }
-                                    }
-                                }
-                                
                             } else if action == "switch_account" {
                                 let success = self.logOut()
                                 if !success {
