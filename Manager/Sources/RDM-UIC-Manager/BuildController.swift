@@ -68,13 +68,13 @@ class BuildController {
         print("[INFO] Building Project...")
         Log.info(message: "Building Project...")
         let xcodebuild = Shell("xcodebuild", "build-for-testing", "-workspace", "\(path)/RealDeviceMap-UIControl.xcworkspace", "-scheme", "RealDeviceMap-UIControl", "-destination", "generic/platform=iOS", "-derivedDataPath", "\(derivedDataDir.path)/Template")
-        print("1")
+        // gets stuck here -->
         let errorPipe = Pipe()
         let outputPipe = Pipe()
         _ = xcodebuild.run(outputPipe: outputPipe, errorPipe: errorPipe)
         let error = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
         let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-        print("2")
+
         if error.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
             
             for line in error.components(separatedBy: "\n") {
