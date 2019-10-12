@@ -107,8 +107,8 @@ extension XCTestCase {
         let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
             if let response = response {
                 let nsHTTPResponse = response as! HTTPURLResponse
-                let statusCode = nsHTTPResponse.statusCode
-               Log.debug("status code = \(statusCode)")
+                _ = nsHTTPResponse.statusCode
+              // Log.debug("status code = \(statusCode)")
             }
             if let error = error {
                Log.debug("\(error)")
@@ -117,8 +117,6 @@ extension XCTestCase {
                 do{
                     let resultJSON = try? JSONSerialization.jsonObject(with: data)
                     resultDict = resultJSON as? [String: Any]
-                } catch _ {
-                    Log.debug("Json response Error")
                 }
                 if !blocking {
                     completion(resultDict)
@@ -159,7 +157,7 @@ extension XCTestCase {
         
     }
     
-    func isTutorial(screenshot: XCUIScreenshot?=nil) -> Bool {
+  /*  func isTutorial(screenshot: XCUIScreenshot?=nil) -> Bool {
         
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
         
@@ -177,68 +175,7 @@ extension XCTestCase {
         }
     
     }
-    /*
-    // Planned detection for partially completed reloads, but doesn't seem worth it now :shrug:
-    func failedTutorialMethod1(screenshot: XCUIScreenshot?=nil) -> Bool {
-        
-        let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
-        
-        if screenshotComp.rgbAtLocation(
-            pos: deviceConfig.compareTutorialL,
-            min: (red: 0.3, green: 0.5, blue: 0.6),
-            max: (red: 0.4, green: 0.6, blue: 0.7)) &&
-            screenshotComp.rgbAtLocation(
-                pos: deviceConfig.compareWarningR,
-                min: (red: 0.3, green: 0.5, blue: 0.6),
-                max: (red: 0.4, green: 0.6, blue: 0.7)) {
-            return true
-        } else {
-            return false
-        }
-        
-    }
-    
-    func failedTutorialMethod2(screenshot: XCUIScreenshot?=nil) -> Bool{
-    
-        //let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
-        /*
-        if screenshotComp.rgbAtLocation(
-            pos: deviceConfig.tutorialProfessorCheck,
-            min: (red: 0.85, green: 0.9, blue: 0.00),
-            max: (red: 0.92, green: 1.0, blue: 0.03)) {
-            return
-        }
-        */
-        return true
-        
-    }
-    
-    func failedTutorialMethod3(screenshot: XCUIScreenshot?=nil) -> Bool{
-        
-        //let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
-        
-        /*if screenshotComp.rgbAtLocation(
-            pos: deviceConfig.tutorialProfessorCheck,
-            min: (red: 0.85, green: 0.9, blue: 0.00),
-            max: (red: 0.92, green: 1.0, blue: 0.03)) {
-            return
-        }*/
-        return true
-    }
-    
-    func failedTutorialMethod4(screenshot: XCUIScreenshot?=nil) -> Bool {
-        
-        //let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
-        
-        /*if screenshotComp.rgbAtLocation(
-            pos: deviceConfig.tutorialProfessorCheck,
-            min: (red: 0.85, green: 0.9, blue: 0.00),
-            max: (red: 0.92, green: 1.0, blue: 0.03)) {
-            return
-        }*/
-        return true
-    }
-    */
+
     func tutorialGenderSelection() -> Bool {
         Log.tutorial("Calling tutorialGenderSelection()")
         
@@ -261,7 +198,7 @@ extension XCTestCase {
         return GenderBool
     }
     
-    func tutorialPhysicalFeature() {
+   func tutorialPhysicalFeature() {
         
         let normalized = app.coordinate(withNormalizedOffset: CGVector(dx:0,dy:0))
         
@@ -310,7 +247,7 @@ extension XCTestCase {
             usleep(UInt32(1500000 * config.delayMultiplier))
             Log.tutorial("Completed Random Eye Color Selection")
             
-        case 2:
+         case 2:
             Log.tutorial("Choosing Random Skin Color")
             
             let randomInt = Int.random(in: 0...2)
@@ -467,9 +404,9 @@ extension XCTestCase {
     func tutorialGenUsername(_ length: Int) -> String {
         let usableCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return String((0..<length).map{ _ in usableCharacters.randomElement()!})
-    }
+    } */
     
-    func findAndClickPokemon(screenshot: XCUIScreenshot?=nil) -> Bool {
+   /* func findAndClickPokemon(screenshot: XCUIScreenshot?=nil) -> Bool {
         
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
         
@@ -502,7 +439,7 @@ extension XCTestCase {
         Log.debug("No Pokemon Found!")
         
         return false
-    }
+    } */
     
     func freeScreen(run: Bool=true) {
         
@@ -738,7 +675,7 @@ extension XCTestCase {
                 deviceConfig.questDeleteConfirm.toXCUICoordinate(app: app).tap()
                 sleep(1 * config.delayMultiplier)
             }
-        }
+        } 
 
         self.freeScreen()
         deviceConfig.closeMenu.toXCUICoordinate(app: app).tap()
@@ -834,23 +771,28 @@ extension XCTestCase {
         
         let start = Date()
         while UInt32(Date().timeIntervalSince(start)) <= (config.encounterMaxWait * config.delayMultiplier) {
-            
-            self.freeScreen(run: false)
-            
-            let screenshot = XCUIScreen.main.screenshot()
-            if screenshot.rgbAtLocation(
-                pos: deviceConfig.encounterPokemonRun,
-                min: (red: 0.98, green: 0.98, blue: 0.98),
-                max: (red: 1.00, green: 1.00, blue: 1.00)) &&
-               screenshot.rgbAtLocation(
-                pos: deviceConfig.encounterPokeball,
-                min: (red: 0.70, green: 0.05, blue: 0.05),
-                max: (red: 0.95, green: 0.30, blue: 0.35)) {
-                deviceConfig.encounterPokemonRun.toXCUICoordinate(app: app).tap()
+            /////// ultra iv we just stand at location for a few ///////////
+            if self.config.ultraIV {
+                usleep(700000)
                 return true
+            //////// no ultra we do some more compicated stuff ////////
+            } else if !self.config.ultraIV {
+                self.freeScreen(run: false)
+                
+                let screenshot = XCUIScreen.main.screenshot()
+                if screenshot.rgbAtLocation(
+                    pos: deviceConfig.encounterPokemonRun,
+                    min: (red: 0.98, green: 0.98, blue: 0.98),
+                    max: (red: 1.00, green: 1.00, blue: 1.00)) &&
+                   screenshot.rgbAtLocation(
+                    pos: deviceConfig.encounterPokeball,
+                    min: (red: 0.70, green: 0.05, blue: 0.05),
+                    max: (red: 0.95, green: 0.30, blue: 0.35)) {
+                    deviceConfig.encounterPokemonRun.toXCUICoordinate(app: app).tap()
+                    return true
+                }
+                usleep(100000)
             }
-            usleep(100000)
-            
         }
         return false
         
