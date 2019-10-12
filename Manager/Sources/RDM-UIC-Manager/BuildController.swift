@@ -68,12 +68,13 @@ class BuildController {
         print("[INFO] Building Project...")
         Log.info(message: "Building Project...")
         let xcodebuild = Shell("xcodebuild", "build-for-testing", "-workspace", "\(path)/RealDeviceMap-UIControl.xcworkspace", "-scheme", "RealDeviceMap-UIControl", "-destination", "generic/platform=iOS", "-derivedDataPath", "\(derivedDataDir.path)/Template")
-        
+        print("1")
         let errorPipe = Pipe()
         let outputPipe = Pipe()
         _ = xcodebuild.run(outputPipe: outputPipe, errorPipe: errorPipe)
         let error = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
         let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        print("2")
         if error.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
             
             for line in error.components(separatedBy: "\n") {
@@ -140,8 +141,10 @@ class BuildController {
             
             for device in devicesToAdd {
                 if device.enabled == 0 {
+                    self.setStatus(uuid: device.uuid, status: "Disabled")
                     continue
                 }
+                
                 let queue = Threading.getQueue(name: "BuildController-\(device.uuid)", type: .serial)
                 activeDeviceLock.lock()
                 activeDevices.append(device)
@@ -248,6 +251,13 @@ class BuildController {
                         if string!.contains(string: "[STATUS] IV") {
                             self.setStatus(uuid: device.uuid, status: "Running: IV")
                         }
+                        if string!.contains(string: "no job left (Got result:") {
+                            self.setStatus(uuid: device.uuid, status: "Completed: Need Assignment")
+                        }
+                        if string!.contains(string: "IV Queue Empty") {
+                            self.setStatus(uuid: device.uuid, status: "IV Queue Empty")
+                        }
+
             
                         fullLog.uic(message: string!, all: true)
                         debugLog.uic(message: string!, all: false)
