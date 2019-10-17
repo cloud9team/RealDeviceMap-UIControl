@@ -13,23 +13,25 @@ class DeviceConfig {
     public static private(set) var global: DeviceConfigProtocol!
     
     public static func setup(app: XCUIApplication) {
-        let ratio = Int(app.frame.size.height / app.frame.size.width * 1000)
-        if ratio >= 1770 && ratio <= 1780 { // iPhones
-            switch app.frame.size.width {
-            case 375: // iPhone Normal
-                // This has no use and is an example only
-                global = DeviceIPhoneNormal(width: Int(app.frame.size.width), height: Int(app.frame.size.height))
-            case 414: // iPhone Large
-                global = DeviceRatio1775(width: Int(app.frame.size.width), height: Int(app.frame.size.height), multiplier: 1.5)
+        let screenRect = UIScreen.main.nativeBounds
+        let screenWidth = screenRect.size.width
+        let screenHeight = screenRect.size.height
+        let screenScale = UIScreen.main.scale
+        Log.debug("Screen width = \(screenWidth), screen height = \(screenHeight) scale = \(screenScale)")
+            switch screenWidth {
+            case 640.0: // iphone 6, 7
+                global = DeviceRatio1775(width: Int(app.frame.size.width), height: Int(app.frame.size.height))
+                Log.debug("using ratio1775")
+            case 1536.0: //ipad
+                global = DeviceRatio1333(width: Int(app.frame.size.width), height: Int(app.frame.size.height))
+                Log.debug("using ratio1335")
+            case 834.0: // iPhone plus
+                global = DeviceRatio1778(width: Int(app.frame.size.width), height: Int(app.frame.size.height), multiplier: 1)
+                Log.debug("using ratio1778")
             default: // other iPhones
                 global = DeviceRatio1775(width: Int(app.frame.size.width), height: Int(app.frame.size.height))
+                Log.debug("using ratio1775")
             }
-        } else if ratio >= 1330 && ratio <= 1340 { // iPad
-            global = DeviceRatio1333(width: Int(app.frame.size.width), height: Int(app.frame.size.height))
-        } else {
-            Log.error("Unsuported Device")
-            fatalError("Unsuported Device")
-        }
     }
     
 }

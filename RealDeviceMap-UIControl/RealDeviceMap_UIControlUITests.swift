@@ -211,7 +211,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             if let firstWarningTimestamp = data!["first_warning_timestamp"] as? Int {
                 self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
             }
-/////////// Minor Text Edit (correct spelling of succesfully //////////////////
+
             Log.info("Connected to Backend succesfully")
             
         }
@@ -496,16 +496,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_invalid_credentials"], blocking: true) { (result) in }
                     shouldExit = true
                     return
-               /* } else if (
-                    screenshotComp.rgbAtLocation(
-                        pos: deviceConfig.startup,
-                        min: (red: 0.0, green: 0.75, blue: 0.55),
-                        max: (red: 1.0, green: 0.90, blue: 0.70))
-                        || isTutorial()
-                    ) {
+                } else if ( isStartup() ) {
                     loggedIn = true
                     isLoggedIn = true
-                    Log.info("Logged in as \(username!)") */
+                    Log.info("Logged in as \(username!)")
                 } else {
                     count += 1
                     if count == 60 {
@@ -824,7 +818,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let onlyEmptyGmos = data?["only_empty_gmos"] as? Bool ?? true
                 let onlyInvalidGmos = data?["only_invalid_gmos"] as? Bool ?? false
                 let containsGmos = data?["contains_gmos"] as? Bool ?? true
-/*                Log.debug("postRequest-----------------------------------")
+/* uncomment for request response data
+                Log.debug("postRequest-----------------------------------")
                 Log.debug("data = \(String(describing: jsonData))")
                 Log.debug("-------------------------------------------")
                 Log.debug(". . . . . . . . . . . . . . . . . . . . .  .")
@@ -1008,7 +1003,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     
                     Log.debug("Performing Startup sequence")
                     currentLocation = config.startupLocation
-                    deviceConfig.startup.toXCUICoordinate(app: app).tap()
+                    isStartup()
                     sleep(2 * config.delayMultiplier)
                     
                     deviceConfig.closeNews.toXCUICoordinate(app: app).tap()
@@ -1106,7 +1101,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         
                         if let data = result!["data"] as? [String: Any], let action = data["action"] as? String {
                             self.action = action
-////////////////////////////-------------- Scan Pokemon-----------------/////////////////
+//////--------- Scan Pokemon-----------------/////////////////
                             if action == "scan_pokemon" {
                                 print("[STATUS] Pokemon")
                                 if hasWarning && self.config.enableAccountManager {
@@ -1137,7 +1132,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.currentLocation = (lat, lon)
                                 self.waitForData = true
                                 self.lock.unlock()
-                                Log.debug("Scanning prepared")
+                               // Log.debug("Scanning prepared")
                                 
                                 var locked = true
                                 while locked {
@@ -1163,7 +1158,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 }
                                 
                             } else if action == "scan_raid" {
-///////////////////////////---------Scan Raid-------------////////////////////////
+///////----- Scan Raid-------------////////////////////////
                                 print("[STATUS] Raid")
                                 if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
                                     Log.info("Account has a warning and is over maxWarningTimeRaid. Logging out!")
@@ -1192,7 +1187,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.targetMaxDistance = self.config.targetMaxDistance
                                 self.waitForData = true
                                 self.lock.unlock()
-                                Log.debug("Scanning prepared")
+                               // Log.debug("Scanning prepared")
                                 
                                 var locked = true
                                 while locked {
@@ -1215,7 +1210,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.lock.unlock()
                                 }
                             } else if action == "scan_quest" {
-///////////////////////////////-------------- Scan Quest --------------------///////////////////
+///////------ Scan Quest --------------------///////////////////
                                 print("[STATUS] Quest")
                                 
                                 let lat = data["lat"] as? Double ?? 0
@@ -1259,7 +1254,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.shouldExit = true
                                     return
                                 }
-                                ///////////////////// if ultra quest, skip ////////////////////////////////
+                                ////// if ultra quest, skip /////////////
                                 if (!self.config.ultraQuests) {
                                     if currentItems >= self.config.itemFullCount && !self.newCreated {
                                         self.freeScreen()
@@ -1279,7 +1274,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         sleep(1)
                                     }
                                 }
-                                ////////////////////// end skip code for ultra quest /////////////////////////////
+                                //////// end skip code for ultra quest /////////
                                 self.newCreated = false
                                 
                                 
@@ -1318,6 +1313,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     usleep(100000 * self.config.delayMultiplier)
                                     ///////// Check if quest was close enough to catch from previous location ///////
                                     if self.encounterDistance <= 40.0 && self.questCount > 0 {
+                                        locked = false
                                         self.waitForData = false
                                         self.gotQuest = true
                                         self.questCount += 1
@@ -1333,7 +1329,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         failedCount += 1
                                         self.noQuestCount += 1
                                         Log.debug("Aborting...Unkown condition at \(lat), \(lon) Distance: \(self.encounterDistance) Cooldown: \(cooldown)")
-                                        //self.shouldExit = true
+                                        self.shouldExit = true
                                         break
                                     }
                                     if !self.gotQuest {
@@ -1406,9 +1402,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         currentItems += self.config.itemsPerStop
                                     }
                                 }
-                             ///////////////// end ulttra quest skip ////////
+                             ///////////////// end ultra quest skip ////////
                             } else if action == "switch_account" {
-///////////////////////////--------------Switch account--------------------////////////////////
+//////--------Switch account----------////////////////////
                                 let success = self.logOut()
                                 if !success {
                                     self.needsLogout = true
@@ -1422,7 +1418,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.shouldExit = true
                                 return
                             } else if action == "scan_iv" {
-////////////////////////////----------- Scan IV ---------------------//////////////////
+////---------- Scan IV ---------------------////////////
                                 print("[STATUS] IV")
                                 if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
                                     Log.info("Account has a warning and is over maxWarningTimeRaid. Logging out!")
@@ -1461,7 +1457,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.listScatterPokemon = true
                                 self.scatterPokemon = [[String: Any]]()
                                 self.lock.unlock()
-                                Log.debug("Scanning prepared")
+                              // Log.debug("Scanning prepared")
                                 sleep(1 * self.config.delayMultiplier)
                                 //////////// if ultra iv, skip ///////
                                 if !self.config.ultraIV {
@@ -1514,7 +1510,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.gotIV = false
                                     self.pokemonEncounterIdForEncounter = nil
                                     self.lock.unlock()
-                                    /////////////////// if ultra iv, skip /////////////////////
+                                    ///// if ultra iv, skip //////////////
                                     if !self.config.ultraIV {
                                         encounter_loop: for count in 0..<5 {
                                                 if (count > 0){
@@ -1543,12 +1539,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                                 //Needed for flying pokemon
                                                 self.deviceConfig.encounterPokemonUpperHigher.toXCUICoordinate(app: self.app).tap()
                                         }
-                                        /////////////////// end skip ultra iv //////////////////////////////
+                                        //// end skip ultra iv //////////////
                                         self.lock.lock()
                                         if self.gotIV {
                                                 self.noEncounterCount = 0
                                                 self.gotIV = false
-                                                Log.debug("Got iv at \(self.currentLocation)")
+                                            Log.debug("Got iv at \(lat), \(lon)")
                                              //   Log.debug("IV Scan Successful for \(self.pokemonEncounterIdForEncounter!)")
                                         } else {
                                                 self.noEncounterCount += 1
@@ -1559,7 +1555,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         var count = 0
                                         var done = false
                                         while count < 3 && !done {
-                                        /////////////// if ultra iv, skip ////////////////
+                                        ///// if ultra iv, skip //////
                                             if !self.config.ultraIV {
                                                 self.freeScreen()
                                                 if count != 0 {
@@ -1572,7 +1568,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                                 self.deviceConfig.encounterPokemonUpperHigher.toXCUICoordinate(app: self.app).tap()
                                                 sleep(2 * self.config.delayMultiplier)
                                             }
-                                         //////// end skip ultra iv - prepareEncounter handles logic for uiv ///////
+                                         ///// end skip ultra iv - prepareEncounter handles logic for uiv ///////
                                             done = self.prepareEncounter()
                                             count += 1
                                         }
@@ -1658,7 +1654,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                             var count = 0
                                             var done = false
                                             while count < 3 && !done {
-                                                ////// if ultra iv, skip ////////////////
+                                                ////// if ultra iv, skip //////
                                                 if !self.config.ultraIV {
                                                     self.freeScreen()
                                                     if count != 0 {
@@ -1671,7 +1667,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                                     self.deviceConfig.encounterPokemonUpperHigher.toXCUICoordinate(app: self.app).tap()
                                                     sleep(2 * self.config.delayMultiplier)
                                                 }
-                                                /////////// end ultra iv skip ///////////
+                                                /////// end ultra iv skip ///////
                                                 done = self.prepareEncounter()
                                                 count += 1
                                             }
@@ -1741,10 +1737,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         sleep(7 * config.delayMultiplier)
                         shouldExit = true
                         return
-                } else if screenshotComp.rgbAtLocation(
-                    pos: deviceConfig.startup,
-                    min: (0.00, 0.75, 0.55),
-                    max: (1.00, 0.90, 0.70)) {
+                } else if isStartup() {
                     Log.info("App Started")
                     isStarted = true
                     sleep(1 * config.delayMultiplier)

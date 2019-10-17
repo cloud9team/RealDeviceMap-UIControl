@@ -1,21 +1,22 @@
 //
-//  DeviceRatio1775.swift
+//  DeviceRatio1778.swift
 //  RealDeviceMap-UIControlUITests
 //
-//  Created by Florian Kostenzer on 18.11.18.
+//  Created by cloud9team on 10/15/19.
+//  Copyright © 2019 Florian Kostenzer. All rights reserved.
 //
 
 import Foundation
 import XCTest
 
-class DeviceRatio1775: DeviceConfigProtocol {
+class DeviceRatio1778: DeviceConfigProtocol {
     
     private var scaler: DeviceCoordinateScaler
     
     required init(width: Int, height: Int, multiplier: Double=1.0) {
-        self.scaler = DeviceCoordinateScaler(widthNow: width, heightNow: height, widthTarget: 320, heightTarget: 568, multiplier: multiplier)
+        self.scaler = DeviceCoordinateScaler(widthNow: width, heightNow: height, widthTarget: 414, heightTarget: 736, multiplier: multiplier)
     }
-    
+    // 6s plus
     // MARK: - Startup
     
     var startup: DeviceCoordinate {
@@ -27,12 +28,13 @@ class DeviceRatio1775: DeviceConfigProtocol {
     }
     
     var cautionButton: DeviceCoordinate {
-        return DeviceCoordinate(x: 197, y: 838, scaler: scaler)
+        return DeviceCoordinate(x: 352, y: 1596, scaler: scaler)
     }
     
     var twothreelineButton: DeviceCoordinate {
-        return DeviceCoordinate(x: 196, y: 649, scaler: scaler)
+        return DeviceCoordinate(x: 196, y: 649, scaler: scaler) 
     }
+    
     var startupLoggedOut: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 175, scaler: scaler)
     }
@@ -76,8 +78,8 @@ class DeviceRatio1775: DeviceConfigProtocol {
     var closeFailedLogin: DeviceCoordinate {
         return DeviceCoordinate(x: 315, y: 665, scaler: scaler)
     }
-
-
+    
+    
     // MARK: - Misc
     
     var closeMenu: DeviceCoordinate {
@@ -102,13 +104,13 @@ class DeviceRatio1775: DeviceConfigProtocol {
     var logoutCompareX: Int {
         return scaler.scaleY(y: 523)
     }
-
+    
     
     // MARK: - Pokemon Encounter
     
-	var encounterPokemonUpperHigher: DeviceCoordinate {
-	    return DeviceCoordinate(x: 320, y: 690, scaler: scaler)
-	}
+    var encounterPokemonUpperHigher: DeviceCoordinate {
+        return DeviceCoordinate(x: 320, y: 690, scaler: scaler)
+    }
     var encounterPokemonUpper: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 710, scaler: scaler)
     }
@@ -275,7 +277,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
     
     
     // MARK: - Tutorial
- 
+    
     
     var compareTutorialL: DeviceCoordinate {
         return DeviceCoordinate(x: 100, y: 900, scaler: scaler)
@@ -312,11 +314,11 @@ class DeviceRatio1775: DeviceConfigProtocol {
     var tutorialUsernameConfirm: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 620, scaler: scaler)
     }
-
+    
     var tutorialProfessorCheck: DeviceCoordinate {
         return DeviceCoordinate(x: 390, y: 866, scaler: scaler)
     }
-
+    
     var tutorialSelectY: Int {
         return scaler.scaleY(y: 930)
     }
@@ -373,7 +375,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
             scaler.scaleX(x: 500),
         ]
     }
-
+    
     var tutorialSharedStyleXs: [Int] {
         return [
             scaler.scaleX(x: 85),
@@ -385,13 +387,13 @@ class DeviceRatio1775: DeviceConfigProtocol {
     
     var tutorialFemaleStyleXs: [Int] {
         return [
-            scaler.scaleX(x: 95), 
+            scaler.scaleX(x: 95),
             scaler.scaleX(x: 230),
             scaler.scaleX(x: 500),
             scaler.scaleX(x: 625)
         ]
     }
-
+    
     var tutorialPoseAndBackpackX: Int {
         return scaler.scaleX(x: 320)
     }
@@ -407,7 +409,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
     
     
     // MARK: - Team Select
-
+    
     var teamSelectBackgorundL: DeviceCoordinate {
         return DeviceCoordinate(x: 100, y: 800, scaler: scaler)
     }
