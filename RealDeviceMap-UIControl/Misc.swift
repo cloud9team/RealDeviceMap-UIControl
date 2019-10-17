@@ -156,7 +156,30 @@ extension XCTestCase {
         }
         
     }
-    
+    func isStartup(screenshot: XCUIScreenshot?=nil) -> Bool {
+        
+        let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
+        Log.debug("-----------------------------------------")
+/*        Log.debug("rgbAtLocation(cautionButton): \(screenshotComp.rgbAtLocation(pos: self.deviceConfig.cautionButton))")
+        Log.debug("rgbAtLocation(twothreelineButton): \(screenshotComp.rgbAtLocation(pos: self.deviceConfig.twothreelineButton))") */
+        if screenshotComp.rgbAtLocation(pos: deviceConfig.cornerTest, min: (red: 0.27, green: 0.68, blue: 0.49), max: (red: 0.30, green: 0.73, blue: 0.53)) {
+            Log.startup("Attempting to clear startup warning")
+                if screenshotComp.rgbAtLocation(pos: deviceConfig.cautionButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
+                    deviceConfig.cautionButton.toXCUICoordinate(app: app).tap()
+                    Log.debug("Cleared Caution warning.")
+                    return true
+                } else if screenshotComp.rgbAtLocation(pos: deviceConfig.twothreelineButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
+                    deviceConfig.twothreelineButton.toXCUICoordinate(app: app).tap()
+                    Log.debug("Cleared two-three line warning.")
+                    return true
+                } else {
+                    Log.debug("Could not find OK button.")
+                }
+         }
+        return false
+    }
+        
+
   /*  func isTutorial(screenshot: XCUIScreenshot?=nil) -> Bool {
         
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()

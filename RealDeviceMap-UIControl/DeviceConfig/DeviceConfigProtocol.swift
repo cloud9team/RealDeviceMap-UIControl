@@ -13,12 +13,21 @@ protocol DeviceConfigProtocol {
     
     /** Green pixel in green button of startup popup. */
     var startup: DeviceCoordinate { get }
-    /** Green pixel in green button of log in button if not logged in. */
+    // check pixel at 2,2 for background color
+    var cornerTest: DeviceCoordinate { get }
+    // left side/center of button lightest green
+    var cautionButton: DeviceCoordinate { get }
+    // same as above - on 2 line prompt select left side lower half
+    // automatically catches 3 line prompt
+    var twothreelineButton: DeviceCoordinate { get }
+    
     var startupLoggedOut: DeviceCoordinate { get }
     /** Green pixel in green button of submit if not age verified. */
     var ageVerification: DeviceCoordinate { get }
+    /** Inside Year Drop down box on startup screen */
     var ageVerificationYear: DeviceCoordinate { get }
     var ageVerificationDragStart: DeviceCoordinate { get }
+    /** Startup and end location from scroll in Age Verification */
     var ageVerificationDragEnd: DeviceCoordinate { get }
     /** ? pixel in ? of logged out. */ //TODO: - Where?
     var passenger: DeviceCoordinate { get }
