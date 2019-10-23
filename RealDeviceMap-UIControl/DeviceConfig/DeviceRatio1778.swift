@@ -36,7 +36,7 @@ class DeviceRatio1778: DeviceConfigProtocol {
     }
     
     var startupLoggedOut: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 175, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 280, scaler: scaler)
     }
     //Find coords by scaling to 640x1136
     var ageVerification : DeviceCoordinate {
@@ -67,7 +67,7 @@ class DeviceRatio1778: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 960, scaler: scaler)
     }
     var closeNews: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 960, scaler: scaler)
+        return DeviceCoordinate(x: 625, y: 2093, scaler: scaler)
     }
     var compareWarningL: DeviceCoordinate {
         return DeviceCoordinate(x: 90, y: 950, scaler: scaler)
@@ -208,23 +208,23 @@ class DeviceRatio1778: DeviceConfigProtocol {
     // MARK: - Login
     
     var loginNewPlayer: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 785, scaler: scaler)
+        return DeviceCoordinate(x: 600, y: 1295, scaler: scaler)
     }
     
     var loginPTC: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 800, scaler: scaler)
+        return DeviceCoordinate(x: 600, y: 1510, scaler: scaler)
     }
     
     var loginUsernameTextfield: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 500, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 1000, scaler: scaler)
     }
     
     var loginPasswordTextfield: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 600, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 1185, scaler: scaler)
     }
     
     var loginConfirm: DeviceCoordinate {
-        return DeviceCoordinate(x: 375, y: 680, scaler: scaler)
+        return DeviceCoordinate(x: 375, y: 1370, scaler: scaler)
     }
     
     var loginBannedBackground: DeviceCoordinate {
