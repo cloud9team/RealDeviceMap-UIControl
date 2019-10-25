@@ -604,8 +604,9 @@ extension XCTestCase {
         deviceConfig.settingsButton.toXCUICoordinate(app: app).tap()
         sleep(2 * config.delayMultiplier)
         deviceConfig.logoutDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.logoutDragEnd.toXCUICoordinate(app: app))
+        sleep(1 * config.delayMultiplier)
+         deviceConfig.logoutDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.logoutDragEnd.toXCUICoordinate(app: app))
         sleep(2 * config.delayMultiplier)
-        
         let screenshot = XCUIScreen.main.screenshot()
         for y in 0...screenshot.image.cgImage!.height / 10 {
             if screenshot.rgbAtLocation(
