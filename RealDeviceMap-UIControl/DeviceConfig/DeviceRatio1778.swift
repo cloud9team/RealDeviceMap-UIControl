@@ -67,7 +67,7 @@ class DeviceRatio1778: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 960, scaler: scaler)
     }
     var closeNews: DeviceCoordinate {
-        return DeviceCoordinate(x: 625, y: 2093, scaler: scaler)
+        return DeviceCoordinate(x: 625, y: 2088, scaler: scaler)
     }
     var compareWarningL: DeviceCoordinate {
         return DeviceCoordinate(x: 90, y: 950, scaler: scaler)
@@ -83,23 +83,23 @@ class DeviceRatio1778: DeviceConfigProtocol {
     // MARK: - Misc
     
     var closeMenu: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 1060, scaler: scaler)
+        return DeviceCoordinate(x: 612, y: 2025, scaler: scaler)
     }
     
     
     // MARK: - Logout
     
     var settingsButton: DeviceCoordinate {
-        return DeviceCoordinate(x: 600, y: 125, scaler: scaler)
+        return DeviceCoordinate(x: 985, y: 238, scaler: scaler)
     }
     var logoutDragStart: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 900, scaler: scaler)
+        return DeviceCoordinate(x: 110, y: 1924, scaler: scaler)
     }
     var logoutDragEnd: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 100, scaler: scaler)
+        return DeviceCoordinate(x: 110, y: 340, scaler: scaler)
     }
     var logoutConfirm: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 610, scaler: scaler)
+        return DeviceCoordinate(x: 370, y: 1100, scaler: scaler)
     }
     var logoutCompareX: Int {
         return scaler.scaleY(y: 523)
@@ -401,10 +401,10 @@ class DeviceRatio1778: DeviceConfigProtocol {
     
     // MARK: - Adevture Sync
     var adventureSyncRewards: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 300, scaler: scaler)
+        return DeviceCoordinate(x: 472, y: 550, scaler: scaler)
     }
     var adventureSyncButton: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 978, scaler: scaler)
+        return DeviceCoordinate(x: 622, y: 1905, scaler: scaler)
     }
     
     
