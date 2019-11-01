@@ -10,7 +10,7 @@ import Foundation
 class Config {
     
     public static let global = Config()
-    
+    var verbose: Bool
     var uuid: String
     var backendURLBaseString: String
     var enableAccountManager: Bool
@@ -42,7 +42,7 @@ class Config {
     init() {
         
         let enviroment = ProcessInfo.processInfo.environment
-
+        verbose = false
         uuid = enviroment["name"] ?? ""
         backendURLBaseString = enviroment["backendURL"] ?? ""
         enableAccountManager = enviroment["enableAccountManager"]?.toBool() ?? false
