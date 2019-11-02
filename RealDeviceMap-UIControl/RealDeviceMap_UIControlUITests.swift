@@ -725,7 +725,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     self.jitterCorner = 0
                 }
                 //"scan_iv", "scan_pokemon", "scan_raids"
-                var actions = [] as NSArray
+                var actions = [String]()
                 if (self.level > 29) {
                     actions = ["pokemon"]
                 }
@@ -738,7 +738,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 ]
             } else {
                 self.lock.unlock()
-                    var actions = [] as NSArray
+                    var actions = [String]()
                     if (self.config.ultraIV == true && self.level > 29) {
                         actions = ["pokemon"]
                         if (self.action == "scan_quest") {
@@ -755,17 +755,22 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     "actions": actions
                 ]
             }
+            if self.config.verbose {
+                Log.debug("*****ACTIONS= \(responseData["actions"])")
+            }
         } else {
             self.lock.unlock()
             responseData = [String: Any]()
         }
         do {
+            
             let jsonData = try JSONSerialization.data(withJSONObject: responseData, options: .prettyPrinted)
             let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
             
-            let repsonse = HTTPResponse(content: jsonString)
-            repsonse.headers = ["Content-Type": "application/json"]
-            return repsonse
+            let response = HTTPResponse(content: jsonString)
+            response.headers = ["Content-Type": "application/json"]
+            
+            return response
         } catch {
             return HTTPResponse(.internalServerError)
         }
@@ -797,7 +802,16 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             jsonData!["pokemon_encounter_id_for_encounter"] = pokemonEncounterIdForEncounter
             jsonData!["list_scatter_pokemon"] = listScatterPokemon
             jsonData!["uuid"] = self.config.uuid
-            
+            if self.config.verbose {
+                let contents = jsonData!["contents"] as? [[String: Any]]
+                //print(contents)
+                for rawData in contents! {
+                    let proto = rawData["data"] as? String
+                    let method = rawData["method"] as? Int
+                    Log.debug("method: \(method) data: \(proto)")
+                }
+                
+              }
             let url = self.backendRawURL
             
             self.postRequest(url: url!, data: jsonData!, blocking: false, completion: { (resultJson) in
@@ -818,14 +832,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let onlyEmptyGmos = data?["only_empty_gmos"] as? Bool ?? true
                 let onlyInvalidGmos = data?["only_invalid_gmos"] as? Bool ?? false
                 let containsGmos = data?["contains_gmos"] as? Bool ?? true
-/* uncomment for request response data
-                Log.debug("postRequest-----------------------------------")
-                Log.debug("data = \(String(describing: jsonData))")
-                Log.debug("-------------------------------------------")
-                Log.debug(". . . . . . . . . . . . . . . . . . . . .  .")
-                Log.debug("Response-----------------------------------")
-                Log.debug("data = \(String(describing: data))")
-                Log.debug("-------------------------------------------") */
+
+                if self.config.verbose {
+                        Log.debug("HANDLEDATAREQUEST2----------------------------------")
+                        Log.debug("data = \(String(describing: data))")
+                }
                 
                 if level != 0 {
                     self.level = level
@@ -1007,6 +1018,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     sleep(2 * config.delayMultiplier)
                     
                     deviceConfig.closeNews.toXCUICoordinate(app: app).tap()
+                    Log.debug("Performing Startup sequence")
                     sleep(1 * config.delayMultiplier)
                     hasWarning = self.checkHasWarning()
                     if hasWarning {
@@ -1212,11 +1224,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                             } else if action == "scan_quest" {
 ///////------ Scan Quest --------------------///////////////////
                                 print("[STATUS] Quest")
-                                
+                               
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
                                 let delayb = data["delay"] as? Double ?? 0
-                                let wait = 60.0
+                                let wait = 90.0
                                 Log.debug("Scanning for Quest at \(lat) \(lon)")
                                 if (!self.config.ultraQuests) {
                                     self.zoom(out: false, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
@@ -1297,7 +1309,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.app.swipeLeft()
                                 }
                                 Log.debug("Calculating Cooldown . . .")
-                                var cooldown = 120.0
+                                var cooldown = 123.0
                                 if self.questCount > 0 {
                                     cooldown = round(self.encounterDistance / 60)
                                 }
@@ -1307,22 +1319,22 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 var success = false
                                 var locked = true
                                 Log.debug("Traveled \(self.encounterDistance) Delaying by \(delay)s. ")
-                                
+                                Log.debug("Action: \(self.action ?? "missing")")
                                 while locked {
                                     
                                     usleep(100000 * self.config.delayMultiplier)
                                     ///////// Check if quest was close enough to catch from previous location ///////
                                     if self.encounterDistance <= 40.0 && self.questCount > 0 {
-                                        locked = false
+                                       // locked = false
                                         self.waitForData = false
                                         self.gotQuest = true
-                                        self.questCount += 1
-                                        self.noQuestCount = 0
+                                       // self.questCount += 1
+                                       // self.noQuestCount = 0
                                         Log.debug("Multi-Quest Add \(lat), \(lon) Distance \(self.encounterDistance) ")
-                                        return
+                                        
                                     }
                                     ////////// Delay should never hit zero. If we hit zero, something wrong. ///////
-                                    guard delay > 1.0 else {
+                                    guard delay > 3.0 else {
                                         delay = 0.0
                                         locked = false
                                         self.waitForData = false
@@ -1330,7 +1342,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         self.noQuestCount += 1
                                         Log.debug("Aborting...Unkown condition at \(lat), \(lon) Distance: \(self.encounterDistance) Cooldown: \(cooldown)")
                                         self.shouldExit = true
-                                        break
+                                        return
                                     }
                                     if !self.gotQuest {
                                         let delay =  delay - Date().timeIntervalSince(start)
