@@ -21,27 +21,15 @@ class DeviceIPhoneNormal: DeviceRatio1775 {
             return DeviceCoordinate(x: 224, y: 761)
     } */
     
-    override var loginTerms2Text: DeviceCoordinate {
-        return DeviceCoordinate(x: 188, y: 450)
-    }
-    override var loginTerms2: DeviceCoordinate {
-        return DeviceCoordinate(x: 375, y: 725)
-    }
-    override var startupLoggedOut: DeviceCoordinate {
-        return DeviceCoordinate(x: 400, y: 115)
-    }
+    
     override var encounterNoARConfirm: DeviceCoordinate {  //no AR popup after saying no on iPhone6
         return DeviceCoordinate(x: 0, y: 0)
     }
     override var encounterTmp: DeviceCoordinate {
         return DeviceCoordinate(x: 0, y: 0)
     }
-    override var closeFailedLogin: DeviceCoordinate {
-        return DeviceCoordinate(x: 383, y: 779)
-    }
-    override var loginNewPlayer: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 925)
-    }
+    
+   
     
     
     

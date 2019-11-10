@@ -138,7 +138,7 @@ extension XCTestCase {
         }
     }
 	
-    func checkHasWarning(screenshot: XCUIScreenshot?=nil) -> Bool {
+ /*   func checkHasWarning(screenshot: XCUIScreenshot?=nil) -> Bool {
         
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
 
@@ -155,7 +155,7 @@ extension XCTestCase {
             return false
         }
         
-    }
+    } */
     func isStartup(screenshot: XCUIScreenshot?=nil) -> Bool {
         
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
@@ -552,8 +552,8 @@ extension XCTestCase {
         
         if screenshot.rgbAtLocation(
             pos: deviceConfig.weather,
-            min: (red: 0.23, green: 0.35, blue: 0.50),
-            max: (red: 0.36, green: 0.47, blue: 0.65)
+            min: (red: 0.8, green: 0.23, blue: 0.30),
+            max: (red: 0.1, green: 0.35, blue: 0.40)
         ) {
             deviceConfig.closeWeather1.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)

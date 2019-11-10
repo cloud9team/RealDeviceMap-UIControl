@@ -756,7 +756,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 ]
             }
             if self.config.verbose {
-                Log.debug("*****ACTIONS= \(responseData["actions"])")
+                Log.debug("*****ACTIONS= \(responseData["actions"] ?? "")")
             }
         } else {
             self.lock.unlock()
@@ -808,7 +808,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 for rawData in contents! {
                     let proto = rawData["data"] as? String
                     let method = rawData["method"] as? Int
-                    Log.debug("method: \(method) data: \(proto)")
+                    Log.debug("method: \(method ?? 0) data: \(proto ?? "")")
                 }
                 
               }
@@ -919,26 +919,34 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
         
         let server = Server()
-        var started = false
-        var startTryCount = 1
-        while !started {
-            do {
-                try server.start(onPort: UInt16(self.config.port))
-                started = true
-            } catch {
-                if startTryCount == 5 {
-                    fatalError("Failed to start server: \(error). Try (\(startTryCount)/5).")
+        server.route(HTTPMethod.GET, "loc", handleLocRequest)
+        server.route(HTTPMethod.GET, "data", handleDataRequest)
+        server.route(HTTPMethod.POST, "loc", handleLocRequest)
+        server.route(HTTPMethod.POST, "data", handleDataRequest)
+        
+        
+        
+        if !server.isRunning {
+            var started = false
+            var startTryCount = 1
+        
+            while !started {
+            
+                do {
+                    try server.start(onPort: UInt16(self.config.port))
+                    started = true
+                } catch {
+                    if startTryCount == 5 {
+                        fatalError("Failed to start server: \(error). Try (\(startTryCount)/5).")
+                    }
+                    Log.error("Failed to start server: \(error). Try (\(startTryCount)/5). Trying again...")
+                    startTryCount += 1
+                    sleep(UInt32(15 * startTryCount))
                 }
-                ///////// Temp fix for port in use error. Need to add stop server on app exit ///////////////////
-                Log.error("Failed to start server: \(error). Try (\(startTryCount)/5). Trying again...")
-                startTryCount += 1
-                sleep(UInt32(15 * startTryCount))
             }
         }
-        server.route(HTTPMethod.GET, "loc", handleLocRequest)
-        server.route(HTTPMethod.POST, "loc", handleLocRequest)
-        server.route(HTTPMethod.GET, "data", handleDataRequest)
-        server.route(HTTPMethod.POST, "data", handleDataRequest)
+            
+        
     
         Log.info("Server running at localhost:\(config.port)")
         
@@ -1019,7 +1027,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     
                     deviceConfig.closeNews.toXCUICoordinate(app: app).tap()
                     Log.debug("Performing Startup sequence")
-                    sleep(1 * config.delayMultiplier)
+                   /* sleep(1 * config.delayMultiplier)
                     hasWarning = self.checkHasWarning()
                     if hasWarning {
                         if self.firstWarningDate == nil && config.enableAccountManager {
@@ -1029,7 +1037,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         Log.info("Account has a warning!")
                         deviceConfig.closeWarning.toXCUICoordinate(app: app).tap()
                         sleep(1 * config.delayMultiplier)
-                    }
+                    } */
                     
                     sleep(2 * config.delayMultiplier)
                     self.freeScreen()

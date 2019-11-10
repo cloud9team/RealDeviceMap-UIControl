@@ -56,16 +56,16 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 780, scaler: scaler)
     }
     var closeWeather1: DeviceCoordinate {
-        return DeviceCoordinate(x: 240, y: 975, scaler: scaler)
+        return DeviceCoordinate(x: 230, y: 1140, scaler: scaler)
     }
     var closeWeather2: DeviceCoordinate {
-        return DeviceCoordinate(x: 220, y: 1080, scaler: scaler)
+        return DeviceCoordinate(x: 230, y: 1090, scaler: scaler)
     }
     var closeWarning: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 960, scaler: scaler)
     }
     var closeNews: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 960, scaler: scaler)
+        return DeviceCoordinate(x: 370, y: 1260, scaler: scaler)
     }
     var compareWarningL: DeviceCoordinate {
         return DeviceCoordinate(x: 90, y: 950, scaler: scaler)
