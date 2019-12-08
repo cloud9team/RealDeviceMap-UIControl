@@ -11,10 +11,14 @@ import XCTest
 class DeviceRatio1775: DeviceConfigProtocol {
     
     private var scaler: DeviceCoordinateScaler
+    var tapScaler: Double
     
-    required init(width: Int, height: Int, multiplier: Double=1.0) {
-        self.scaler = DeviceCoordinateScaler(widthNow: width, heightNow: height, widthTarget: 320, heightTarget: 568, multiplier: multiplier)
+    required init(width: Int, height: Int, multiplier: Double=1.0, tapMultiplier: Double=1.0) {
+        self.scaler = DeviceCoordinateScaler(widthNow: width, heightNow: height, widthTarget: 320, heightTarget: 568, multiplier: multiplier, tapMultiplier: tapMultiplier)
+        self.tapScaler = tapMultiplier
+
     }
+
     
     // MARK: - Startup
     
@@ -27,7 +31,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
     }
     
     var cautionButton: DeviceCoordinate {
-        return DeviceCoordinate(x: 197, y: 838, scaler: scaler)
+        return DeviceCoordinate(x: 178, y: 818, scaler: scaler)
     }
     
     var twothreelineButton: DeviceCoordinate {

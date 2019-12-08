@@ -12,7 +12,7 @@ class DeviceIPhoneNormal: DeviceRatio1775 {
     
     // All values not overriden here default to DeviceRatio1775s values
     override var startup: DeviceCoordinate {
-        return DeviceCoordinate(x: 325, y: 960)
+       return DeviceCoordinate(x: 325, y: 960, tapScaler: tapScaler)
     }
    /* override var cautionButton: DeviceCoordinate {
             return DeviceCoordinate(x: 205, y: 986)
@@ -23,10 +23,10 @@ class DeviceIPhoneNormal: DeviceRatio1775 {
     
     
     override var encounterNoARConfirm: DeviceCoordinate {  //no AR popup after saying no on iPhone6
-        return DeviceCoordinate(x: 0, y: 0)
+        return DeviceCoordinate(x: 0, y: 0, tapScaler: tapScaler)
     }
     override var encounterTmp: DeviceCoordinate {
-        return DeviceCoordinate(x: 0, y: 0)
+        return DeviceCoordinate(x: 0, y: 0, tapScaler: tapScaler)
     }
     
    
@@ -36,10 +36,10 @@ class DeviceIPhoneNormal: DeviceRatio1775 {
     // MARK: - Item Clearing
     
     override var itemDeleteIncrease: DeviceCoordinate {
-        return DeviceCoordinate(x: 540, y: 573)
+        return DeviceCoordinate(x: 540, y: 573, tapScaler: tapScaler)
     }
     override var itemDeleteConfirm: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 826)
+        return DeviceCoordinate(x: 320, y: 826, tapScaler: tapScaler)
     }
     override var itemDeleteX: Int {
         return 686

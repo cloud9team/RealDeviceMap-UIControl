@@ -11,7 +11,7 @@ protocol DeviceConfigProtocol {
     
     // MARK: - Startup
     
-    /** Green pixel in green button of startup popup. */
+    // not used 
     var startup: DeviceCoordinate { get }
     // check pixel at 2,2 for background color
     var cornerTest: DeviceCoordinate { get }

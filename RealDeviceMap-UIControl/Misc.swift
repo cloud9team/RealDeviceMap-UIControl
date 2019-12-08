@@ -160,23 +160,28 @@ extension XCTestCase {
         
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
         if self.config.verbose {
-            Log.debug("Pixel color test range allowed(R:.27-.3 G:.68-.73 B:.56-.61) Result----")
-            Log.debug("rgbAtLocation(cautionButton): \(screenshotComp.rgbAtLocation(pos: deviceConfig.cautionButton))")
-            Log.debug("rgbAtLocation(twothreelineButton): \(screenshotComp.rgbAtLocation(pos: deviceConfig.twothreelineButton))")
+            Log.debug("cornerTest location check at \(deviceConfig.cornerTest.x),\(deviceConfig.cornerTest.y) color range allowed(R:.27-.3 G:.68-.73 B:.49-.53)")
+            Log.debug("rgbA (cornerTest) result: \(screenshotComp.rgbAtLocation(pos: deviceConfig.cornerTest))")
+            
         }
         if screenshotComp.rgbAtLocation(pos: deviceConfig.cornerTest, min: (red: 0.27, green: 0.68, blue: 0.49), max: (red: 0.30, green: 0.73, blue: 0.53)) {
+            
             Log.startup("Attempting to clear startup warning")
-                if screenshotComp.rgbAtLocation(pos: deviceConfig.cautionButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
+            if self.config.verbose {
+                Log.debug("cautionButton location check at \(deviceConfig.cautionButton.x),\(deviceConfig.cautionButton.y) color range allowed(R:.61-.66 G:.83-.87 B:.56-.61) Result----")
+                Log.debug("rgbA (cautionButton) result: \(screenshotComp.rgbAtLocation(pos: deviceConfig.cautionButton))")
+            }
+            if screenshotComp.rgbAtLocation(pos: deviceConfig.cautionButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
                     deviceConfig.cautionButton.toXCUICoordinate(app: app).tap()
                     Log.debug("Cleared Caution warning.")
                     return true
-                } else if screenshotComp.rgbAtLocation(pos: deviceConfig.twothreelineButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
+            } else if screenshotComp.rgbAtLocation(pos: deviceConfig.twothreelineButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
                     deviceConfig.twothreelineButton.toXCUICoordinate(app: app).tap()
                     Log.debug("Cleared two-three line warning.")
                     return true
-                } else {
+            } else {
                     Log.debug("Could not find OK button.")
-                }
+            }
          }
         return false
     }
@@ -467,7 +472,16 @@ extension XCTestCase {
     } */
     
     func freeScreen(run: Bool=true) {
-        
+        let tapMultiplier: Double
+        if #available(iOS 13.0, *)
+        {
+            tapMultiplier = 0.5
+        }
+        else
+        {
+            tapMultiplier = 1.0
+        }
+
         var screenshot = clickPassengerWarning()
         if !self.config.ultraIV {
             if screenshot.rgbAtLocation(
@@ -540,8 +554,7 @@ extension XCTestCase {
             }
             
             let x = Int(arc4random_uniform(UInt32(app.frame.width)))
-            let button = DeviceCoordinate(x: x, y: deviceConfig.teamSelectY).toXCUICoordinate(app: app)
-            button.tap()
+            let button = DeviceCoordinate(x: x, y: deviceConfig.teamSelectY, tapScaler: tapMultiplier).toXCUICoordinate(app: app)
             sleep(3 * config.delayMultiplier)
             deviceConfig.teamSelectNext.toXCUICoordinate(app: app).tap()
             sleep(2 * config.delayMultiplier)

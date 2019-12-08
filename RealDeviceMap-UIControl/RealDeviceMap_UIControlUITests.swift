@@ -285,6 +285,26 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 alwaysButton.tap()
             }
             
+            let laterButton = alert.buttons["Later"]
+            if laterButton.exists {
+                laterButton.tap()
+            }
+            
+            let remindmelaterButton = alert.buttons["Remind Me Later"]
+            if remindmelaterButton.exists {
+                remindmelaterButton.tap()
+            }
+            
+            let closeButton = alert.buttons["Close"]
+            if closeButton.exists {
+                closeButton.tap()
+            }
+            
+            let allowWhileUsingButton = alert.buttons["Allow While Using App"]
+            if allowWhileUsingButton.exists {
+                allowWhileUsingButton.tap()
+            }
+
             return true
         }
 

@@ -13,8 +13,11 @@ class DeviceRatio1778: DeviceConfigProtocol {
     
     private var scaler: DeviceCoordinateScaler
     
-    required init(width: Int, height: Int, multiplier: Double=1.0) {
-        self.scaler = DeviceCoordinateScaler(widthNow: width, heightNow: height, widthTarget: 414, heightTarget: 736, multiplier: multiplier)
+    
+    required init(width: Int, height: Int, multiplier: Double=1.0, tapMultiplier: Double=1.0) {
+        self.scaler = DeviceCoordinateScaler(widthNow: width, heightNow: height, widthTarget: 414, heightTarget: 736, multiplier: multiplier, tapMultiplier: tapMultiplier)
+        
+        
     }
     // 6s plus
     // MARK: - Startup
