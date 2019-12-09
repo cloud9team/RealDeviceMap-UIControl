@@ -35,7 +35,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var scatterPokemon = [[String: Any]]()
     var encounterDistance = 0.0
     var encounterDelay = 1.0
-    
+    var server = Server()
     var level: Int = 0
     var systemAlertMonitorToken: NSObjectProtocol? = nil
     
@@ -119,7 +119,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var maxLevel: Int {
         get {
             if UserDefaults.standard.object(forKey: "max_level") == nil {
-                return 29
+                return 30
             }
             return UserDefaults.standard.integer(forKey: "max_level")
         }
@@ -158,8 +158,14 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         backendRawURL = URL(string: config.backendURLBaseString + "/raw")!
         continueAfterFailure = true
         needsLogout = false
+
+        addTeardownBlock {
+            Log.info("Force-Stopping HTTP \(self.server)")
+            self.server.stop(immediately: true)
+        }
         
     }
+
     
     func part0Setup() {
         
@@ -418,7 +424,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         if shouldExit || !config.enableAccountManager {
             return
         }
-        
+
+        self.lock.lock()
+        self.currentLocation = self.config.startupLocation
+        self.lock.unlock()
+
         if username != nil && !isLoggedIn {
             
             sleep(1 * config.delayMultiplier)
@@ -938,38 +948,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             return
         }
         
-        let server = Server()
-        server.route(HTTPMethod.GET, "loc", handleLocRequest)
-        server.route(HTTPMethod.GET, "data", handleDataRequest)
-        server.route(HTTPMethod.POST, "loc", handleLocRequest)
-        server.route(HTTPMethod.POST, "data", handleDataRequest)
-        
-        
-        
-        if !server.isRunning {
-            var started = false
-            var startTryCount = 1
-        
-            while !started {
-            
-                do {
-                    try server.start(onPort: UInt16(self.config.port))
-                    started = true
-                } catch {
-                    if startTryCount == 5 {
-                        fatalError("Failed to start server: \(error). Try (\(startTryCount)/5).")
-                    }
-                    Log.error("Failed to start server: \(error). Try (\(startTryCount)/5). Trying again...")
-                    startTryCount += 1
-                    sleep(UInt32(15 * startTryCount))
-                }
-            }
-        }
-            
-        
-    
-        Log.info("Server running at localhost:\(config.port)")
-        
         // Start Heartbeat
         var dispatchQueueRunning = true
         DispatchQueue(label: "heartbeat_sender").async {
@@ -977,8 +955,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(15)
                 self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "heartbeat"]) { (cake) in /* The cake is a lie! */ }
             }
-            Log.info("Force-Stopping HTTP Server")
-            server.stop(immediately: true)
+            Log.info("Force-Stopping HTTP \(self.server)")
+            self.server.stop(immediately: true)
         }
         
         // Stop Heartbeat if we exit the scope
@@ -1849,7 +1827,38 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 Log.info("Unregistered UI Interruption Monitor")
                 removeUIInterruptionMonitor(systemAlertMonitorToken)
             }
+            Log.info("Force-Stopping HTTP \(self.server)")
+            self.server.stop(immediately: true)
         }
+        
+        if !self.server.isRunning {
+            self.server.route(HTTPMethod.GET, "loc", handleLocRequest)
+            self.server.route(HTTPMethod.GET, "data", handleDataRequest)
+            self.server.route(HTTPMethod.POST, "loc", handleLocRequest)
+            self.server.route(HTTPMethod.POST, "data", handleDataRequest)
+            
+            var started = false
+            var startTryCount = 1
+            while !started {
+                do {
+                 try self.server.start(onPort: UInt16(self.config.port))
+                    started = true
+                    startTryCount = 1
+                    Log.info("server running: \(self.server.isRunning) on \(self.server.port)")
+                } catch {
+                    if startTryCount == 5 {
+                        fatalError("Failed to start server: \(error). Try (\(startTryCount)/5).")
+                    }
+                    Log.error("Failed to start server: \(error). Try (\(startTryCount)/5). Trying again...")
+                    startTryCount += 1
+                    sleep(UInt32(15 * startTryCount))
+                }
+            }
+        }
+        
+        
+        
+//        Log.info("Server running at localhost:\(config.port)")
         
         while true {
             switch lastTestIndex {
