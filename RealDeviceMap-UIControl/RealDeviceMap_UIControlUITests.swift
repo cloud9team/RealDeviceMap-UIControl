@@ -160,8 +160,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         needsLogout = false
 
         addTeardownBlock {
-            Log.info("Force-Stopping HTTP \(self.server)")
+            Log.info("Force-Stopping \(self.server)")
             self.server.stop(immediately: true)
+            Log.info("\(self.server) running: \(self.server.isRunning)")
+
         }
         
     }
@@ -955,8 +957,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(15)
                 self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "heartbeat"]) { (cake) in /* The cake is a lie! */ }
             }
-            Log.info("Force-Stopping HTTP \(self.server)")
+            Log.info("Force-Stopping \(self.server)")
             self.server.stop(immediately: true)
+            Log.info("\(self.server) running: \(self.server.isRunning)")
+
         }
         
         // Stop Heartbeat if we exit the scope
@@ -1827,8 +1831,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 Log.info("Unregistered UI Interruption Monitor")
                 removeUIInterruptionMonitor(systemAlertMonitorToken)
             }
-            Log.info("Force-Stopping HTTP \(self.server)")
+            Log.info("Force-Stopping \(self.server)")
             self.server.stop(immediately: true)
+            Log.info("\(self.server) running: \(self.server.isRunning)")
+
         }
         
         if !self.server.isRunning {
@@ -1844,7 +1850,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                  try self.server.start(onPort: UInt16(self.config.port))
                     started = true
                     startTryCount = 1
-                    Log.info("server running: \(self.server.isRunning) on \(self.server.port)")
+                    Log.info("\(self.server) running: \(self.server.isRunning) on port \(self.server.port)")
                 } catch {
                     if startTryCount == 5 {
                         fatalError("Failed to start server: \(error). Try (\(startTryCount)/5).")

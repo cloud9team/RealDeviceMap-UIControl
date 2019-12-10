@@ -5,7 +5,7 @@
 //  Created by cloud9team on 10/15/19.
 //  Copyright © 2019 Florian Kostenzer. All rights reserved.
 //
-
+/* This file not used
 import Foundation
 import XCTest
 
@@ -434,3 +434,4 @@ class DeviceRatio1778: DeviceConfigProtocol {
     }
     
 }
+*/
