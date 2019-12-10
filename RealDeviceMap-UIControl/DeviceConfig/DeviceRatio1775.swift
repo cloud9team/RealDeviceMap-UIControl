@@ -60,16 +60,16 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 780, scaler: scaler)
     }
     var closeWeather1: DeviceCoordinate {
-        return DeviceCoordinate(x: 230, y: 1140, scaler: scaler)
+        return DeviceCoordinate(x: 240, y: 975, scaler: scaler)
     }
     var closeWeather2: DeviceCoordinate {
-        return DeviceCoordinate(x: 230, y: 1090, scaler: scaler)
+        return DeviceCoordinate(x: 220, y: 1080, scaler: scaler)
     }
     var closeWarning: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 960, scaler: scaler)
     }
     var closeNews: DeviceCoordinate {
-        return DeviceCoordinate(x: 370, y: 1260, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 960, scaler: scaler)
     }
     var compareWarningL: DeviceCoordinate {
         return DeviceCoordinate(x: 90, y: 950, scaler: scaler)
@@ -78,7 +78,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 550, y: 950, scaler: scaler)
     }
     var closeFailedLogin: DeviceCoordinate {
-        return DeviceCoordinate(x: 315, y: 665, scaler: scaler)
+        return DeviceCoordinate(x: 383, y: 779, scaler: scaler)
     }
 
 
@@ -92,13 +92,13 @@ class DeviceRatio1775: DeviceConfigProtocol {
     // MARK: - Logout
     
     var settingsButton: DeviceCoordinate {
-        return DeviceCoordinate(x: 600, y: 125, scaler: scaler)
+        return DeviceCoordinate(x: 500, y: 122, scaler: scaler)
     }
     var logoutDragStart: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 900, scaler: scaler)
+        return DeviceCoordinate(x: 420, y: 968, scaler: scaler)
     }
     var logoutDragEnd: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 100, scaler: scaler)
+        return DeviceCoordinate(x: 420, y: 250, scaler: scaler)
     }
     var logoutConfirm: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 610, scaler: scaler)
