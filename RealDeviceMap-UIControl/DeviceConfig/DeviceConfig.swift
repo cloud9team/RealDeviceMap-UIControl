@@ -22,8 +22,7 @@ class DeviceConfig {
         {
             tapMultiplier = 1.0
         }
-
-        let screenRect = UIScreen.main.nativeBounds
+        
         let screenWidth = app.frame.size.width
         let screenHeight = app.frame.size.height
         let screenScale = UIScreen.main.scale
