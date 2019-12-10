@@ -504,7 +504,7 @@ extension XCTestCase {
             max: (red: 1.00, green: 0.5, blue: 0.60)
         ) {
             if self.config.verbose {
-                Log.debug("Pixel color adventureSyncButton range allowed(R:.4-.5 G:.8-.9 B:.5-.7) Result----")
+                Log.debug("Pixel color test range allowed(R:.4-.5 G:.8-.9 B:.5-.7) Result----")
                 Log.debug("rgbAtLocation(adventureSyncButton): \(screenshot.rgbAtLocation(pos: deviceConfig.adventureSyncButton))")
                 
             }
@@ -513,7 +513,6 @@ extension XCTestCase {
                 min: (red: 0.40, green: 0.80, blue: 0.50),
                 max: (red: 0.50, green: 0.90, blue: 0.70)
             ) {
-                Log.debug("Collecting Adventure sync rewards")
                 deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
                 sleep(2 * config.delayMultiplier)
                 deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
