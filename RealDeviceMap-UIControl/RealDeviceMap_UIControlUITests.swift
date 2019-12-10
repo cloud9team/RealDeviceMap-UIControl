@@ -1460,7 +1460,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
-                               // let id = data["id"] as? String ?? ""
+                                let id = data["id"] as? String ?? ""
                                 
                                 Log.debug("Scanning for IV at \(lat) \(lon)")
                                 

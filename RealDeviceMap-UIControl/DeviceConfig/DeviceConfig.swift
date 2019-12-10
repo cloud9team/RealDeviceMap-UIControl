@@ -23,16 +23,13 @@ class DeviceConfig {
             tapMultiplier = 1.0
         }
 
-        
+        let screenRect = UIScreen.main.nativeBounds
         let screenWidth = app.frame.size.width
         let screenHeight = app.frame.size.height
         let screenScale = UIScreen.main.scale
         Log.debug("Screen width = \(screenWidth), screen height = \(screenHeight) scale = \(screenScale)")
             switch screenWidth {
-            case 320.0: // SE
-                global = DeviceRatio1775(width: Int(app.frame.size.width), height: Int(app.frame.size.height), multiplier: 1.0, tapMultiplier: tapMultiplier)
-                Log.debug("using 320 ratio1775 with tapmultiplier \(tapMultiplier)")
-            case 375.0: // iphone 6, 7
+            case 320.0: // iphone 6, 7
                 global = DeviceRatio1775(width: Int(app.frame.size.width), height: Int(app.frame.size.height), multiplier: 1.0, tapMultiplier: tapMultiplier)
                 Log.debug("using 320 ratio1775 with tapmultiplier \(tapMultiplier)")
             case 1536.0: //ipad
