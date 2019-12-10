@@ -38,7 +38,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var server = Server()
     var level: Int = 0
     var systemAlertMonitorToken: NSObjectProtocol? = nil
-    
+    var accountAvailable = true
     var shouldExit: Bool {
         get {
             return UserDefaults.standard.bool(forKey: "should_exit")
@@ -229,6 +229,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
         
         if username == nil && config.enableAccountManager {
+            guard self.accountAvailable else {
+                sleep(5 * config.delayMultiplier)
+                self.accountAvailable = true
+                return
+            }
             postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "get_account", "min_level": minLevel, "max_level": maxLevel], blocking: true) { (result) in
                 guard
                     let data = result!["data"] as? [String: Any],
@@ -236,6 +241,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     let password = data["password"] as? String
                     else {
                         Log.error("Failed to get account and not logged in.")
+                        self.accountAvailable = false
                         self.shouldExit = true
                         return
                 }
@@ -246,6 +252,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 
                 if let firstWarningTimestamp = data["first_warning_timestamp"] as? Int {
                     self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
+                    Log.debug("account warned in db: \(self.firstWarningDate ?? Date())")
                 }
                 
                 Log.info("Got account \(username) from backend.")
@@ -325,7 +332,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         if shouldExit || !config.enableAccountManager {
             return
         }
-        
         if username != nil && !isLoggedIn {
             
             print("[STATUS] Login")
@@ -364,7 +370,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 pos: self.deviceConfig.ageVerification,
                 min: (0.15, 0.33, 0.17),
                 max: (0.25, 0.43, 0.27)) {
-                Log.debug("App is in age verification.")
+                Log.debug("Setting age verification.")
                 
                 print("[STATUS] Age verification")
                 //Open the year select
@@ -395,7 +401,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
         
         if username != nil && !isLoggedIn {
-            
+            Log.debug("Entering account details for: \(username ?? "No username")")
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginUsernameTextfield.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
@@ -411,7 +417,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
         
         if username != nil && !isLoggedIn {
-            
+            Log.debug("Entering password for: \(username ?? "No username")")
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginPasswordTextfield.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
@@ -841,6 +847,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     let proto = rawData["data"] as? String
                     let method = rawData["method"] as? Int
                     Log.debug("method: \(method ?? 0) data: \(proto ?? "")")
+                
                 }
                 
               }
@@ -866,7 +873,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let containsGmos = data?["contains_gmos"] as? Bool ?? true
 
                 if self.config.verbose {
-                        Log.debug("HANDLEDATAREQUEST2----------------------------------")
+                        Log.debug("POSTREQUEST----------------------------------")
                         Log.debug("data = \(String(describing: data))")
                 }
                 
@@ -1334,7 +1341,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     
                                     usleep(100000 * self.config.delayMultiplier)
                                     ///////// Check if quest was close enough to catch from previous location ///////
-                                    if self.encounterDistance <= 40.0 && self.questCount > 0 {
+                                    if self.encounterDistance > 0.0 && self.encounterDistance <= 40.0 && self.questCount > 0 {
                                        // locked = false
                                         self.waitForData = false
                                         self.gotQuest = true
@@ -1847,7 +1854,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             var startTryCount = 1
             while !started {
                 do {
-                 try self.server.start(onPort: UInt16(self.config.port))
+                 try self.server.start(port: Int(self.config.port))
                     started = true
                     startTryCount = 1
                     Log.info("\(self.server) running: \(self.server.isRunning) on port \(self.server.port)")

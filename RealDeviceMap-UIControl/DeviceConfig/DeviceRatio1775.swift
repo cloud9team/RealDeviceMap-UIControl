@@ -38,7 +38,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 196, y: 649, scaler: scaler)
     }
     var startupLoggedOut: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 175, scaler: scaler)
+        return DeviceCoordinate(x: 422, y: 164, scaler: scaler)
     }
     //Find coords by scaling to 640x1136
     var ageVerification : DeviceCoordinate {
@@ -98,13 +98,13 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 900, scaler: scaler)
     }
     var logoutDragEnd: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 100, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 150, scaler: scaler)
     }
     var logoutConfirm: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 610, scaler: scaler)
     }
     var logoutCompareX: Int {
-        return scaler.scaleY(y: 523)
+        return scaler.scaleY(y: 223)
     }
 
     

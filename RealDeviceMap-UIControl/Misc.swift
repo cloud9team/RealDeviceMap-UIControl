@@ -513,6 +513,7 @@ extension XCTestCase {
                 min: (red: 0.40, green: 0.80, blue: 0.50),
                 max: (red: 0.50, green: 0.90, blue: 0.70)
             ) {
+                Log.debug("Collecting AdventureSync rewards")
                 deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
                 sleep(2 * config.delayMultiplier)
                 deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
@@ -562,12 +563,13 @@ extension XCTestCase {
             sleep(2 * config.delayMultiplier)
             screenshot = clickPassengerWarning()
         }
-        
+        Log.debug("Checking for weather conditions.")
         if screenshot.rgbAtLocation(
             pos: deviceConfig.weather,
             min: (red: 0.8, green: 0.23, blue: 0.30),
             max: (red: 0.1, green: 0.35, blue: 0.40)
         ) {
+            Log.debug("Clearing weather warning.")
             deviceConfig.closeWeather1.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
             deviceConfig.closeWeather2.toXCUICoordinate(app: app).tap()
@@ -640,13 +642,13 @@ extension XCTestCase {
         deviceConfig.logoutConfirm.toXCUICoordinate(app: app).tap()
         sleep(10 * config.delayMultiplier)
         let screenshotComp = XCUIScreen.main.screenshot()
-        
+        Log.debug("Looking for logout button")
         if screenshotComp.rgbAtLocation(
             pos: deviceConfig.startupLoggedOut,
             min: (0.95, 0.75, 0.0),
             max: (1.00, 0.85, 0.1)
         ) {
-            Log.debug("Logged out sucesfully")
+            Log.debug("Logged out succesfully")
             return true
         } else {
             Log.error("Logging out failed. Restarting...")
