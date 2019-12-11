@@ -539,6 +539,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     loggedIn = true
                     isLoggedIn = true
                     Log.info("Logged in as \(username!)")
+                    if (screenshotComp.rgbAtLocation(
+                        pos: deviceConfig.loginBannedBackground,
+                        min: (red: 0.0, green: 0.2, blue: 0.3),
+                        max: (red: 0.05, green: 0.3, blue: 0.4))
+                        ) {
+                        Log.debug("Got ban. Restarting...")
+                        app.launch()
+                        sleep(10 * config.delayMultiplier)
+                    }
                 } else {
                     count += 1
                     if count == 60 {
@@ -963,13 +972,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(15)
                 self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "heartbeat"]) { (cake) in /* The cake is a lie! */ }
             }
-            Log.debug("connection count \(self.server.httpConnectionCount)")
-            self.server.stop(immediately: true)
-            Log.info("\(self.server) dspatchqueue running: \(self.server.isRunning)")
-
         }
-        
-        // Stop Heartbeat if we exit the scope
         defer {
              Log.debug("------------------------stopped dispatchqueue")
             dispatchQueueRunning = false
@@ -1846,9 +1849,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 Log.info("Unregistered UI Interruption Monitor")
                 removeUIInterruptionMonitor(systemAlertMonitorToken)
             }
-            Log.info("Force-Stopping \(self.server)")
+       /*     Log.info("Force-Stopping \(self.server)")
             self.server.stop(immediately: true)
-            Log.info("\(self.server) running: \(self.server.isRunning)")
+            Log.info("\(self.server) running: \(self.server.isRunning)") */
 
         }
         
@@ -1858,12 +1861,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             self.server.route(HTTPMethod.POST, "loc", handleLocRequest)
             self.server.route(HTTPMethod.POST, "data", handleDataRequest)
             
-            var started = false
+           // var started = false
             var startTryCount = 1
-            while !started {
+            while !self.server.isRunning  {
                 do {
                  try self.server.start(port: Int(self.config.port))
-                    started = true
+                   // started = true
                     startTryCount = 1
                     Log.info("\(self.server) running: \(self.server.isRunning) on port \(self.server.port) connection count \(self.server.httpConnectionCount)")
                 } catch {
