@@ -37,6 +37,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var encounterDelay = 1.0
     var server = Server()
     var level: Int = 0
+    var cooldown = true
     var systemAlertMonitorToken: NSObjectProtocol? = nil
     var accountAvailable = true
     var shouldExit: Bool {
@@ -162,7 +163,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         addTeardownBlock {
             Log.info("Force-Stopping \(self.server)")
             self.server.stop(immediately: true)
-            Log.info("\(self.server) running: \(self.server.isRunning)")
+            Log.info("\(self.server) running: \(self.server.isRunning) connection count: \(self.server.httpConnectionCount)")
 
         }
         
@@ -779,11 +780,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     var actions = [String]()
                     if (self.config.ultraIV == true && self.level > 29) {
                         actions = ["pokemon"]
-                        if (self.action == "scan_quest") {
-                            actions = ["pokestop", "pokemon"]
-                        } else if (self.config.ultraQuests == false) {
-                            actions = ["pokemon"]
-                        }
+                    }
+                    if !self.cooldown && self.config.ultraQuests {
+                            actions = ["pokestop"]
                     }
                 responseData = [
                     "latitude": currentLocation!.lat,
@@ -844,9 +843,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let contents = jsonData!["contents"] as? [[String: Any]]
                 //print(contents)
                 for rawData in contents! {
-                    let proto = rawData["data"] as? String
+                    _ = rawData["data"] as? String
                     let method = rawData["method"] as? Int
-                    Log.debug("method: \(method ?? 0) data: \(proto ?? "")")
+                    Log.debug("**rawData method: \(method ?? 0)**")
                 
                 }
                 
@@ -964,14 +963,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(15)
                 self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "heartbeat"]) { (cake) in /* The cake is a lie! */ }
             }
-            Log.info("Force-Stopping \(self.server)")
+            Log.debug("connection count \(self.server.httpConnectionCount)")
             self.server.stop(immediately: true)
-            Log.info("\(self.server) running: \(self.server.isRunning)")
+            Log.info("\(self.server) dspatchqueue running: \(self.server.isRunning)")
 
         }
         
         // Stop Heartbeat if we exit the scope
         defer {
+             Log.debug("------------------------stopped dispatchqueue")
             dispatchQueueRunning = false
         }
         
@@ -1326,7 +1326,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.app.swipeLeft()
                                 }
                                 Log.debug("Calculating Cooldown . . .")
-                                var cooldown = 123.0
+                                var cooldown = 20.0
                                 if self.questCount > 0 {
                                     cooldown = round(self.encounterDistance / 60)
                                 }
@@ -1362,7 +1362,14 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         return
                                     }
                                     if !self.gotQuest {
+                                        Log.debug("cooling down for \(cooldown)s before spin")
+                                        
+                                        self.cooldown = false
                                         let delay =  delay - Date().timeIntervalSince(start)
+                                        if delay <= wait {
+                                            self.cooldown = false
+                                            Log.debug("cooldown disabled")
+                                        }
                                         Log.debug("Delaying by \(delay)s")
                                         usleep(UInt32(min(3.0, delay) * 1000000.0))
                                         continue
@@ -1392,6 +1399,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 if self.gotQuest {
                                     self.questCount += 1
                                     self.noQuestCount = 0
+                                    self.cooldown = true
                                     Log.debug("Got Quest at \(lat), \(lon) - Quest Count: \(self.questCount) | Missed Count: \(self.noQuestCount)")
                                 } else {
                                     self.noQuestCount += 1
@@ -1857,7 +1865,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                  try self.server.start(port: Int(self.config.port))
                     started = true
                     startTryCount = 1
-                    Log.info("\(self.server) running: \(self.server.isRunning) on port \(self.server.port)")
+                    Log.info("\(self.server) running: \(self.server.isRunning) on port \(self.server.port) connection count \(self.server.httpConnectionCount)")
                 } catch {
                     if startTryCount == 5 {
                         fatalError("Failed to start server: \(error). Try (\(startTryCount)/5).")

@@ -42,7 +42,7 @@ class Config {
     init() {
         
         let enviroment = ProcessInfo.processInfo.environment
-        verbose = false
+        verbose = true
         uuid = enviroment["name"] ?? ""
         backendURLBaseString = enviroment["backendURL"] ?? ""
         enableAccountManager = enviroment["enableAccountManager"]?.toBool() ?? false
