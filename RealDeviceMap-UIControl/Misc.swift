@@ -138,24 +138,25 @@ extension XCTestCase {
         }
     }
 	
- /*   func checkHasWarning(screenshot: XCUIScreenshot?=nil) -> Bool {
+   func checkHasWarning(screenshot: XCUIScreenshot?=nil) -> Bool {
         
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
-
+        Log.debug("Checking for red warning on account...")
         if screenshotComp.rgbAtLocation(
             pos: deviceConfig.compareWarningL,
-            min: (red: 0.03, green: 0.07, blue: 0.10),
-            max: (red: 0.07, green: 0.11, blue: 0.14)) &&
+            min: (red: 0.85, green: 0.23, blue: 0.30),
+            max: (red: 0.98, green: 0.32, blue: 0.40)) &&
            screenshotComp.rgbAtLocation(
             pos: deviceConfig.compareWarningR,
-            min: (red: 0.03, green: 0.07, blue: 0.10),
-            max: (red: 0.07, green: 0.11, blue: 0.14)) {
+            min: (red: 0.0, green: 0.0, blue: 0.0),
+            max: (red: 0.2, green: 0.2, blue: 0.2)) {
             return true
         } else {
+            Log.debug("Account passed...for now......")
             return false
         }
         
-    } */
+    } 
     func isStartup(screenshot: XCUIScreenshot?=nil) -> Bool {
         
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
@@ -165,7 +166,6 @@ extension XCTestCase {
             
         }
         if screenshotComp.rgbAtLocation(pos: deviceConfig.cornerTest, min: (red: 0.27, green: 0.68, blue: 0.49), max: (red: 0.30, green: 0.73, blue: 0.53)) {
-            
             Log.startup("Attempting to clear startup warning")
             if self.config.verbose {
                 Log.debug("cautionButton location check at \(deviceConfig.cautionButton.x),\(deviceConfig.cautionButton.y) color range allowed(R:.61-.66 G:.83-.87 B:.56-.61) Result----")
@@ -173,8 +173,8 @@ extension XCTestCase {
             }
             if screenshotComp.rgbAtLocation(pos: deviceConfig.cautionButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
                     deviceConfig.cautionButton.toXCUICoordinate(app: app).tap()
-                    Log.debug("Cleared Caution warning.")
-                    return true
+                Log.debug("Cleared Caution warning.")
+                return true
             } else if screenshotComp.rgbAtLocation(pos: deviceConfig.twothreelineButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
                     deviceConfig.twothreelineButton.toXCUICoordinate(app: app).tap()
                     Log.debug("Cleared two-three line warning.")
@@ -498,6 +498,7 @@ extension XCTestCase {
                 sleep(1 * config.delayMultiplier)
             }
         }
+        Log.debug("Checking for adventure sync rewards")
         if screenshot.rgbAtLocation(
             pos: deviceConfig.adventureSyncRewards,
             min: (red: 0.98, green: 0.3, blue: 0.45),
@@ -529,41 +530,42 @@ extension XCTestCase {
                 screenshot = clickPassengerWarning()
             }
         }
-        
-        if screenshot.rgbAtLocation(
-            pos: deviceConfig.teamSelectBackgorundL,
-            min: (red: 0.00, green: 0.20, blue: 0.25),
-            max: (red: 0.05, green: 0.35, blue: 0.35)) &&
-           screenshot.rgbAtLocation(
-            pos: deviceConfig.teamSelectBackgorundR,
-            min: (red: 0.00, green: 0.20, blue: 0.25),
-            max: (red: 0.05, green: 0.35, blue: 0.35)
-        ) {
-            
-            for _ in 1...6 {
-                deviceConfig.teamSelectNext.toXCUICoordinate(app: app).tap()
-                sleep(1 * config.delayMultiplier)
-            }
-            sleep(3 * config.delayMultiplier)
-            
-            for _ in 1...3 {
-                for _ in 1...5 {
+        if !self.config.ultraIV {
+            if screenshot.rgbAtLocation(
+                pos: deviceConfig.teamSelectBackgorundL,
+                min: (red: 0.00, green: 0.20, blue: 0.25),
+                max: (red: 0.05, green: 0.35, blue: 0.35)) &&
+               screenshot.rgbAtLocation(
+                pos: deviceConfig.teamSelectBackgorundR,
+                min: (red: 0.00, green: 0.20, blue: 0.25),
+                max: (red: 0.05, green: 0.35, blue: 0.35)
+            ) {
+                
+                for _ in 1...6 {
                     deviceConfig.teamSelectNext.toXCUICoordinate(app: app).tap()
                     sleep(1 * config.delayMultiplier)
                 }
-                sleep(4 * config.delayMultiplier)
+                sleep(3 * config.delayMultiplier)
+                
+                for _ in 1...3 {
+                    for _ in 1...5 {
+                        deviceConfig.teamSelectNext.toXCUICoordinate(app: app).tap()
+                        sleep(1 * config.delayMultiplier)
+                    }
+                    sleep(4 * config.delayMultiplier)
+                }
+                
+                let x = Int(arc4random_uniform(UInt32(app.frame.width)))
+                let button = DeviceCoordinate(x: x, y: deviceConfig.teamSelectY, tapScaler: tapMultiplier).toXCUICoordinate(app: app)
+                sleep(3 * config.delayMultiplier)
+                deviceConfig.teamSelectNext.toXCUICoordinate(app: app).tap()
+                sleep(2 * config.delayMultiplier)
+                deviceConfig.teamSelectWelcomeOk.toXCUICoordinate(app: app).tap()
+                sleep(2 * config.delayMultiplier)
+                screenshot = clickPassengerWarning()
             }
-            
-            let x = Int(arc4random_uniform(UInt32(app.frame.width)))
-            let button = DeviceCoordinate(x: x, y: deviceConfig.teamSelectY, tapScaler: tapMultiplier).toXCUICoordinate(app: app)
-            sleep(3 * config.delayMultiplier)
-            deviceConfig.teamSelectNext.toXCUICoordinate(app: app).tap()
-            sleep(2 * config.delayMultiplier)
-            deviceConfig.teamSelectWelcomeOk.toXCUICoordinate(app: app).tap()
-            sleep(2 * config.delayMultiplier)
-            screenshot = clickPassengerWarning()
         }
-        Log.debug("Checking for weather conditions.")
+        Log.debug("Checking for weather condition 1.")
         if screenshot.rgbAtLocation(
             pos: deviceConfig.weather,
             min: (red: 0.8, green: 0.23, blue: 0.30),
@@ -619,30 +621,44 @@ extension XCTestCase {
         print("[STATUS] Logout")
         
         let normalized = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
-        
+        var found = false
         deviceConfig.closeMenu.toXCUICoordinate(app: app).tap()
         sleep(2 * config.delayMultiplier)
         deviceConfig.settingsButton.toXCUICoordinate(app: app).tap()
         sleep(2 * config.delayMultiplier)
         deviceConfig.logoutDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.logoutDragEnd.toXCUICoordinate(app: app))
         sleep(1 * config.delayMultiplier)
-         deviceConfig.logoutDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.logoutDragEnd.toXCUICoordinate(app: app))
-        sleep(2 * config.delayMultiplier)
-        let screenshot = XCUIScreen.main.screenshot()
-        for y in 0...screenshot.image.cgImage!.height / 10 {
-            if screenshot.rgbAtLocation(
+        let screenshot1 = XCUIScreen.main.screenshot()
+        for y in 0...screenshot1.image.cgImage!.height / 10 {
+            if screenshot1.rgbAtLocation(
                 pos: (x: deviceConfig.logoutCompareX, y: y * 10),
                 min: (red: 0.60, green: 0.9, blue: 0.6),
                 max: (red: 0.75, green: 1.0, blue: 0.7)) {
                 normalized.withOffset(CGVector(dx: deviceConfig.logoutCompareX, dy: y * 10)).tap()
+                found = true
                 break
+            }
+         }
+         deviceConfig.logoutDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.logoutDragEnd.toXCUICoordinate(app: app))
+        sleep(2 * config.delayMultiplier)
+        if !found {
+            let screenshot2 = XCUIScreen.main.screenshot()
+            for y in 0...screenshot2.image.cgImage!.height / 10 {
+                if screenshot2.rgbAtLocation(
+                    pos: (x: deviceConfig.logoutCompareX, y: y * 10),
+                    min: (red: 0.60, green: 0.9, blue: 0.6),
+                    max: (red: 0.75, green: 1.0, blue: 0.7)) {
+                    normalized.withOffset(CGVector(dx: deviceConfig.logoutCompareX, dy: y * 10)).tap()
+                    found = true
+                    break
+                }
             }
         }
         sleep(2 * config.delayMultiplier)
         deviceConfig.logoutConfirm.toXCUICoordinate(app: app).tap()
-        sleep(10 * config.delayMultiplier)
+        sleep(20 * config.delayMultiplier)
         let screenshotComp = XCUIScreen.main.screenshot()
-        Log.debug("Looking for logout button")
+        Log.debug("Waiting for startup screen...")
         if screenshotComp.rgbAtLocation(
             pos: deviceConfig.startupLoggedOut,
             min: (0.95, 0.75, 0.0),

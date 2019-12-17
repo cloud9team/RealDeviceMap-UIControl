@@ -66,16 +66,16 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 230, y: 1090, scaler: scaler)
     }
     var closeWarning: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 960, scaler: scaler)
+        return DeviceCoordinate(x: 310, y: 995, scaler: scaler)
     }
     var closeNews: DeviceCoordinate {
         return DeviceCoordinate(x: 370, y: 1260, scaler: scaler)
     }
     var compareWarningL: DeviceCoordinate {
-        return DeviceCoordinate(x: 90, y: 950, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 118, scaler: scaler)
     }
     var compareWarningR: DeviceCoordinate {
-        return DeviceCoordinate(x: 550, y: 950, scaler: scaler)
+        return DeviceCoordinate(x: 586, y: 118, scaler: scaler)
     }
     var closeFailedLogin: DeviceCoordinate {
         return DeviceCoordinate(x: 315, y: 665, scaler: scaler)
@@ -95,16 +95,16 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 600, y: 125, scaler: scaler)
     }
     var logoutDragStart: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 900, scaler: scaler)
+        return DeviceCoordinate(x: 550, y: 900, scaler: scaler)
     }
     var logoutDragEnd: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 150, scaler: scaler)
+        return DeviceCoordinate(x: 550, y: 150, scaler: scaler)
     }
     var logoutConfirm: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 610, scaler: scaler)
     }
     var logoutCompareX: Int {
-        return scaler.scaleY(y: 223)
+        return scaler.scaleY(y: 478)
     }
 
     
