@@ -240,16 +240,32 @@ class BuildController {
                             self.setStatus(uuid: device.uuid, status: "Running: Tutorial")
                         }
                         if string!.contains(string: "[STATUS] Pokemon") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Pokemon")
+                            if string!.contains(string: "Account has") {
+                                self.setStatus(uuid: device.uuid, status: "Running: Pokemon - Account Warned")
+                            } else {
+                                self.setStatus(uuid: device.uuid, status: "Running: Pokemon")
+                            }
                         }
                         if string!.contains(string: "[STATUS] Raid") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Raid")
+                            if string!.contains(string: "Account has") {
+                                self.setStatus(uuid: device.uuid, status: "Running: Raid - Account Warned")
+                            } else {
+                                self.setStatus(uuid: device.uuid, status: "Running: Raid")
+                            }
                         }
                         if string!.contains(string: "[STATUS] Quest") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Quest")
+                            if string!.contains(string: "Account has") {
+                                self.setStatus(uuid: device.uuid, status: "Running: Quest - Account Warned")
+                            } else {
+                                self.setStatus(uuid: device.uuid, status: "Running: Quest")
+                            }
                         }
                         if string!.contains(string: "[STATUS] IV") {
-                            self.setStatus(uuid: device.uuid, status: "Running: IV")
+                            if string!.contains(string: "Account has") {
+                                self.setStatus(uuid: device.uuid, status: "Running: IV - Account Warned")
+                            } else {
+                                self.setStatus(uuid: device.uuid, status: "Running: IV")
+                            }
                         }
                         if string!.contains(string: "no job left (Got result:") {
                             self.setStatus(uuid: device.uuid, status: "Completed: Need Assignment")
