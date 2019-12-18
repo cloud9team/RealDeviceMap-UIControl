@@ -219,6 +219,9 @@ class BuildController {
                 outputPipe.fileHandleForReading.readabilityHandler = { fileHandle in
                     let string = String(data: fileHandle.availableData, encoding: .utf8)
                     if string != nil && string!.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
+                        var stringSplit = string!.components(separatedBy: "\n")
+                        let statusUpdate = stringSplit[0]
+                        
                         if string!.contains(string: "[STATUS] Started") && locked {
                             Log.debug(message: "[\(device.name)] Done building")
                             self.setStatus(uuid: device.uuid, status: "Running: Starting")
@@ -240,15 +243,23 @@ class BuildController {
                             self.setStatus(uuid: device.uuid, status: "Running: Tutorial")
                         }
                         if string!.contains(string: "[STATUS] Pokemon") {
-                            if string!.contains(string: "Account has") {
+                             if string!.contains(string: "Account has") {
                                 self.setStatus(uuid: device.uuid, status: "Running: Pokemon - Account Warned")
+                            } else if string!.contains(string: "Pokemon scan at") {
+                                //var statusUpdate = ?string.replacingOccurrences(of: "[STATUS] ", with: "")
+                                let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                                self.setStatus(uuid: device.uuid, status: statusUpdate)
                             } else {
+                               
                                 self.setStatus(uuid: device.uuid, status: "Running: Pokemon")
                             }
                         }
                         if string!.contains(string: "[STATUS] Raid") {
                             if string!.contains(string: "Account has") {
                                 self.setStatus(uuid: device.uuid, status: "Running: Raid - Account Warned")
+                            } else if string!.contains(string: "Raid scan at") {
+                                let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                                self.setStatus(uuid: device.uuid, status: statusUpdate)
                             } else {
                                 self.setStatus(uuid: device.uuid, status: "Running: Raid")
                             }
@@ -256,6 +267,9 @@ class BuildController {
                         if string!.contains(string: "[STATUS] Quest") {
                             if string!.contains(string: "Account has") {
                                 self.setStatus(uuid: device.uuid, status: "Running: Quest - Account Warned")
+                            } else if string!.contains(string: "Quest at") {
+                                let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                                self.setStatus(uuid: device.uuid, status: statusUpdate)
                             } else {
                                 self.setStatus(uuid: device.uuid, status: "Running: Quest")
                             }

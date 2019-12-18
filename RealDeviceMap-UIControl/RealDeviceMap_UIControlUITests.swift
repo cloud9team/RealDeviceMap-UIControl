@@ -222,6 +222,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             }
             if let firstWarningTimestamp = data!["first_warning_timestamp"] as? Int {
                 self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
+                 Log.info("Account retrieved has warning.")
             }
 
             Log.info("Connected to Backend succesfully")
@@ -866,7 +867,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let level = data?["level"] as? Int ?? 0
                 let nearby = data?["nearby"] as? Int ?? 0
                 let wild = data?["wild"] as? Int ?? 0
-                //let forts = data?["forts"] as? Int ?? 0
+                // let forts = data?["forts"] as? Int ?? 0
                 let quests = data?["quests"] as? Int ?? 0
                 let encounters = data?["encounters"] as? Int ?? 0
                 let pokemonLat = data?["pokemon_lat"] as? Double
@@ -1156,8 +1157,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                             if action == "scan_pokemon" {
                                 if hasWarning {
                                     print("[STATUS] Pokemon - Account has warning")
-                                } else {
-                                    print("[STATUS] Pokemon")
                                 }
                             /*    if hasWarning && self.config.enableAccountManager {
                                     Log.info("Logging out...")
@@ -1206,7 +1205,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         locked = self.waitForData
                                         if !locked {
                                             failedCount = 0
-                                            Log.debug("Pokemon loaded after \(Date().timeIntervalSince(start)).")
+                                           // Log.debug("Pokemon loaded after \(Date().timeIntervalSince(start)).")
+                                            let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
+                                            let lat2 = String(format: "%.5f", lat)
+                                            let lon2 = String(format: "%.5f", lon)
+
+                                            print("[STATUS] Pokemon scan at \(lat2),\(lon2) loaded: \(loadTime)")
                                         }
                                     }
                                     self.lock.unlock()
@@ -1216,8 +1220,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 ///////----- Scan Raid-------------////////////////////////
                                 if hasWarning {
                                     print("[STATUS] Raid - Account has warning")
-                                } else {
-                                    print("[STATUS] Raid")
                                 }
                                /* if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
                                     Log.info("Logging out...")
@@ -1234,7 +1236,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.shouldExit = true
                                     return
                                 } */
-                                
+                                //let forts = data?["forts"] as? Int ?? 0
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
                                 Log.debug("Scanning for Raid at \(lat) \(lon)")
@@ -1262,7 +1264,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         locked = self.waitForData
                                         if !locked {
                                             failedCount = 0
-                                            Log.debug("Raids loaded after \(Date().timeIntervalSince(start)).")
+                                            let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
+                                            let lat2 = String(format: "%.5f", lat)
+                                            let lon2 = String(format: "%.5f", lon)
+                                            
+                                            print("[STATUS] Raid scan at \(lat2),\(lon2) loaded: \(loadTime)")
+                                          //  Log.debug("Raids loaded after \(Date().timeIntervalSince(start)).")
                                         }
                                     }
                                     self.lock.unlock()
@@ -1271,8 +1278,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 ///////------ Scan Quest --------------------///////////////////
                                 if hasWarning {
                                     print("[STATUS] Quest - Account has warning")
-                                } else {
-                                    print("[STATUS] Quest")
                                 }
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
@@ -1370,7 +1375,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 Log.debug("Traveled \(self.encounterDistance) Delaying by \(delay)s. ")
                                 Log.debug("Action: \(self.action ?? "missing")")
                                 while locked {
-                                    
+                                   
                                     usleep(100000 * self.config.delayMultiplier)
                                     ///////// Check if quest was close enough to catch from previous location ///////
                                     if self.encounterDistance > 0.0 && self.encounterDistance <= 40.0 && self.questCount > 0 {
@@ -1382,17 +1387,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         Log.debug("Multi-Quest Add \(lat), \(lon) Distance \(self.encounterDistance) ")
                                         
                                     }
-                                    ////////// Delay should never hit zero. If we hit zero, something wrong. ///////
-                                    guard delay > 3.0 else {
-                                        delay = 0.0
-                                        locked = false
-                                        self.waitForData = false
-                                        failedCount += 1
-                                        self.noQuestCount += 1
-                                        Log.debug("Aborting...Unkown condition at \(lat), \(lon) Distance: \(self.encounterDistance) Cooldown: \(cooldown)")
-                                        self.shouldExit = true
-                                        return
-                                    }
+                                   
                                     if !self.gotQuest {
                                         self.cooldown = false
                                         /*  if self.cooldown {
@@ -1406,7 +1401,17 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                             }
                                         }
                                         if !self.cooldown { */
-                                        let delay =  delay - Date().timeIntervalSince(start)
+                                        var delay =  delay - Date().timeIntervalSince(start)
+                                        guard delay > 3.0 else {
+                                            let delay = 0.0
+                                            locked = false
+                                            self.waitForData = false
+                                            failedCount += 1
+                                            self.noQuestCount += 1
+                                            Log.debug("Aborting...Unkown condition at \(lat), \(lon) Distance: \(self.encounterDistance) Cooldown: \(cooldown)")
+                                            self.shouldExit = true
+                                            return
+                                        }
                                         Log.debug("Waiting \(delay)s for quest data...")
                                         usleep(UInt32(min(1.0, delay) * 1000000.0))
                                         continue
@@ -1434,14 +1439,16 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 
                                 // keep rolling count of quests
                                 self.lock.lock()
+                                let lat2 = String(format: "%.5f", lat)
+                                let lon2 = String(format: "%.5f", lon)
                                 if self.gotQuest {
                                     self.questCount += 1
                                     self.noQuestCount = 0
                                     self.cooldown = true
-                                    Log.debug("Got Quest at \(lat), \(lon) - Quest Count: \(self.questCount) | Missed Count: \(self.noQuestCount)")
+                                    print("[STATUS] Quest at \(lat2), \(lon2) Count: \(self.questCount) | Missed: \(self.noQuestCount)")
                                 } else {
                                     self.noQuestCount += 1
-                                    Log.debug("Missed Quest at: \(lat), \(lon) - Missed Count: \(self.noQuestCount)")
+                                    print("[STATUS] Quest at \(lat2), \(lon2) Count: \(self.questCount) | Missed: \(self.noQuestCount)")
                                 }
                                 self.gotQuest = false
                                 

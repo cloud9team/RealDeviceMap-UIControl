@@ -556,7 +556,7 @@ extension XCTestCase {
                 }
                 
                 let x = Int(arc4random_uniform(UInt32(app.frame.width)))
-                let button = DeviceCoordinate(x: x, y: deviceConfig.teamSelectY, tapScaler: tapMultiplier).toXCUICoordinate(app: app)
+                _ = DeviceCoordinate(x: x, y: deviceConfig.teamSelectY, tapScaler: tapMultiplier).toXCUICoordinate(app: app) //was "let button"
                 sleep(3 * config.delayMultiplier)
                 deviceConfig.teamSelectNext.toXCUICoordinate(app: app).tap()
                 sleep(2 * config.delayMultiplier)
