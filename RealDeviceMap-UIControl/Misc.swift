@@ -567,13 +567,12 @@ extension XCTestCase {
         }
         Log.debug("Checking for weather condition 1.")
         if screenshot.rgbAtLocation(
-            pos: deviceConfig.weather,
-            min: (red: 0.8, green: 0.23, blue: 0.30),
-            max: (red: 0.1, green: 0.35, blue: 0.40)
+            pos: deviceConfig.closeWeather1,
+            min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)
         ) {
             Log.debug("Clearing weather warning.")
             deviceConfig.closeWeather1.toXCUICoordinate(app: app).tap()
-            sleep(1 * config.delayMultiplier)
+            sleep(2 * config.delayMultiplier)
             deviceConfig.closeWeather2.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
             screenshot = clickPassengerWarning()
@@ -596,6 +595,15 @@ extension XCTestCase {
                 sleep(1 * config.delayMultiplier)
                 screenshot = clickPassengerWarning()
             }
+        }
+        Log.debug("Checking for Enable Adventure Sync Popup...")
+        if screenshot.rgbAtLocation(
+            pos: deviceConfig.enableAdventureSync,
+            min: (red: 0.8, green: 0.53, blue: 0.69), max: (red: 1.0, green: 0.67, blue: 0.81)
+            ) {
+            Log.debug("Clearing Enable Adventure Sync Popup.")
+            deviceConfig.enableAdventureSyncClose.toXCUICoordinate(app: app).tap()
+            
         }
 
     }
@@ -648,6 +656,8 @@ extension XCTestCase {
                     pos: (x: deviceConfig.logoutCompareX, y: y * 10),
                     min: (red: 0.60, green: 0.9, blue: 0.6),
                     max: (red: 0.75, green: 1.0, blue: 0.7)) {
+                    Log.debug("logoutCompareX location check tap at \(normalized.withOffset(CGVector(dx: deviceConfig.logoutCompareX, dy: y * 10)))")
+                    
                     normalized.withOffset(CGVector(dx: deviceConfig.logoutCompareX, dy: y * 10)).tap()
                     found = true
                     break

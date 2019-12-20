@@ -45,7 +45,7 @@ protocol DeviceConfigProtocol {
     var compareWarningL: DeviceCoordinate { get }
     /** Black pixel in warning (First Strike) popup on the right side. */
     var compareWarningR: DeviceCoordinate { get }
-	/** Trying to Fix The persisting Login Issue **/
+	/** R in DiffeRent Account **/
 	var closeFailedLogin: DeviceCoordinate { get }
     
     // MARK: - Misc
@@ -148,7 +148,7 @@ protocol DeviceConfigProtocol {
     var loginBannedBackground: DeviceCoordinate { get }
     /** Green pixel in "TRY A DIFFERENT ACCOUNT" button of "Failed to login" popup*/
     var loginBannedText: DeviceCoordinate { get }
-    /** Green pixel in "Retry" button of "Failed to login" popup*/
+    /** Green pixel left side "Retry" button of "Failed to login" popup*/
     var loginBanned: DeviceCoordinate { get }
     /** "Switch Accounts" button of "Failed to login" popup */
     var loginBannedSwitchAccount: DeviceCoordinate { get }
@@ -222,7 +222,10 @@ protocol DeviceConfigProtocol {
     var adventureSyncRewards: DeviceCoordinate { get }
     /** Green/Blue or Pixel in claim/close button of adventure sync popup */
     var adventureSyncButton: DeviceCoordinate { get }
-    
+    /** Pink pixel in Enable Adventure Sync popup */
+    var enableAdventureSync: DeviceCoordinate { get }
+    /** Tap Maybe Later */
+    var enableAdventureSyncClose: DeviceCoordinate { get }
     
     // MARK: - Team Select
     

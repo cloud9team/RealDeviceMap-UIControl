@@ -849,7 +849,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             jsonData!["uuid"] = self.config.uuid
             if self.config.verbose {
                 let contents = jsonData!["contents"] as? [[String: Any]]
-                //print(contents)
+                
                 for rawData in contents! {
                     _ = rawData["data"] as? String
                     let method = rawData["method"] as? Int
@@ -1116,6 +1116,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 } else {
                     
                     // Work work work
+                    
                     postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "get_job"], blocking: true) { (result) in
                         
                         if result == nil {
@@ -1158,22 +1159,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 if hasWarning {
                                     print("[STATUS] Pokemon - Account has warning")
                                 }
-                            /*    if hasWarning && self.config.enableAccountManager {
-                                    Log.info("Logging out...")
-                                    let success = self.logOut()
-                                    if !success {
-                                        self.needsLogout = true
-                                        return
-                                    }
-                                    
-                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
-                                    self.username = nil
-                                    self.isLoggedIn = false
-                                    UserDefaults.standard.synchronize()
-                                    self.shouldExit = true
-                                    return
-                                } */
-                                
+                                self.freeScreen()
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
                                 Log.debug("Scanning for Pokemon at \(lat) \(lon)")
@@ -1186,7 +1172,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.currentLocation = (lat, lon)
                                 self.waitForData = true
                                 self.lock.unlock()
-                               // Log.debug("Scanning prepared")
                                 
                                 var locked = true
                                 while locked {
@@ -1221,22 +1206,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 if hasWarning {
                                     print("[STATUS] Raid - Account has warning")
                                 }
-                               /* if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
-                                    Log.info("Logging out...")
-                                    let success = self.logOut()
-                                    if !success {
-                                        self.needsLogout = true
-                                        return
-                                    }
-                                    
-                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
-                                    self.username = nil
-                                    self.isLoggedIn = false
-                                    UserDefaults.standard.synchronize()
-                                    self.shouldExit = true
-                                    return
-                                } */
-                                //let forts = data?["forts"] as? Int ?? 0
+                                self.freeScreen()
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
                                 Log.debug("Scanning for Raid at \(lat) \(lon)")
@@ -1279,46 +1249,14 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 if hasWarning {
                                     print("[STATUS] Quest - Account has warning")
                                 }
+                                self.freeScreen()
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
-                                let delayb = data["delay"] as? Double ?? 0
-                                let wait = 90.0
+                                _ = data["delay"] as? Double ?? 0
+                                let wait = 60
                                 Log.debug("Scanning for Quest at \(lat) \(lon)")
                                 if (!self.config.ultraQuests) {
                                     self.zoom(out: false, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
-                                }
-                                
-                              /*  if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
-                                    Log.info("Logging out...")
-                                    let success = self.logOut()
-                                    if !success {
-                                        self.needsLogout = true
-                                        return
-                                    }
-                                    
-                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
-                                    self.username = nil
-                                    self.isLoggedIn = false
-                                    UserDefaults.standard.synchronize()
-                                    self.shouldExit = true
-                                    return
-                                } */
-                                
-                                if delayb >= self.config.minDelayLogout && self.config.enableAccountManager {
-                                    Log.debug("Switching account. Delay too large.")
-                                    let success = self.logOut()
-                                    if !success {
-                                        self.needsLogout = true
-                                        return
-                                    }
-                                    
-                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
-                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
-                                    self.username = nil
-                                    self.isLoggedIn = false
-                                    UserDefaults.standard.synchronize()
-                                    self.shouldExit = true
-                                    return
                                 }
                                 ////// if ultra quest, skip /////////////
                                 if (!self.config.ultraQuests) {
@@ -1363,16 +1301,33 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.app.swipeLeft()
                                 }
                                 Log.debug("Calculating Cooldown . . .")
-                                var cooldown = 20.0
+                                var cooldownTime = 20
                                 if self.questCount > 0 {
-                                    cooldown = round(self.encounterDistance / 60)
+                                    cooldownTime = Int(round(self.encounterDistance / 50))
                                 }
-                                var delay = (wait + cooldown)
-                                
+                                var delay = (wait + cooldownTime)
+                                self.lock.lock()
+                                if Double(delay) >= self.config.minDelayLogout && self.config.enableAccountManager {
+                                    Log.debug("Switching account. Delay too large.")
+                                    let success = self.logOut()
+                                    if !success {
+                                        self.needsLogout = true
+                                        return
+                                    }
+                                    
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
+                                    self.username = nil
+                                    self.isLoggedIn = false
+                                    UserDefaults.standard.synchronize()
+                                    self.shouldExit = true
+                                    return
+                                }
+                                self.lock.unlock()
                                 let start = Date()
                                 var success = false
                                 var locked = true
-                                Log.debug("Traveled \(self.encounterDistance) Delaying by \(delay)s. ")
+                                Log.debug("Traveled \(self.encounterDistance) Cooldown time: \(cooldownTime)s. ")
                                 Log.debug("Action: \(self.action ?? "missing")")
                                 while locked {
                                    
@@ -1387,39 +1342,37 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         Log.debug("Multi-Quest Add \(lat), \(lon) Distance \(self.encounterDistance) ")
                                         
                                     }
-                                   
+                                    if cooldownTime == 1 {
+                                        Log.debug("Cooldown disabled after \(Date().timeIntervalSince(start)).")
+                                    }
+                                    if cooldownTime != 0 {
+                                        sleep(1)
+                                        Log.debug("cooldown time remaining: \(cooldownTime)")
+                                        cooldownTime -= 1
+                                        continue
+                                    }
+                                    self.cooldown = false
+                                    
                                     if !self.gotQuest {
-                                        self.cooldown = false
-                                        /*  if self.cooldown {
-                                            sleep(1)
-                                            cooldownTime = Int(cooldownTime - 1)
-                                            if cooldownTime != 0 {
-                                                continue
-                                            } else {
-                                                self.cooldown = false
-                                                Log.debug("cooldown disabled")
-                                            }
-                                        }
-                                        if !self.cooldown { */
-                                        var delay =  delay - Date().timeIntervalSince(start)
+                                        let delay = Double(delay) - Date().timeIntervalSince(start)
                                         guard delay > 3.0 else {
-                                            let delay = 0.0
+                                            
                                             locked = false
                                             self.waitForData = false
                                             failedCount += 1
                                             self.noQuestCount += 1
-                                            Log.debug("Aborting...Unkown condition at \(lat), \(lon) Distance: \(self.encounterDistance) Cooldown: \(cooldown)")
-                                            self.shouldExit = true
+                                            Log.debug("Aborting...Unknown condition at \(lat), \(lon) Distance: \(self.encounterDistance) Cooldown: \(cooldownTime)")
+                                          //  self.shouldExit = true
                                             return
                                         }
                                         Log.debug("Waiting \(delay)s for quest data...")
-                                        usleep(UInt32(min(1.0, delay) * 1000000.0))
+                                        usleep(UInt32(min(1, delay) * 1000000))
                                         continue
                                       //  }
                                     }
                                     
                                     self.lock.lock()
-                                    if Date().timeIntervalSince(start) >= self.config.raidMaxTime + delay {
+                                    if Date().timeIntervalSince(start) >= self.config.raidMaxTime + Double(delay) {
                                         locked = false
                                         self.waitForData = false
                                         failedCount += 1
@@ -1428,10 +1381,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     } else {
                                         locked = self.waitForData
                                         if !locked {
-                                            delay = 0.0
+                                            delay = 0
                                             success = true
                                             failedCount = 0
-                                            Log.debug("Cooldown disabled after \(Date().timeIntervalSince(start)).")
                                         }
                                     }
                                     self.lock.unlock()
@@ -1503,33 +1455,14 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 ////---------- Scan IV ---------------------////////////
                                 if hasWarning {
                                     print("[STATUS] IV - Account has warning")
-                                } else {
-                                    print("[STATUS] IV")
                                 }
-                            /*    if hasWarning && self.config.enableAccountManager {
-                                    Log.info("Logging out...")
-                                    let success = self.logOut()
-                                    if !success {
-                                        self.needsLogout = true
-                                        return
-                                    }
-                                    
-                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
-                                    self.username = nil
-                                    self.isLoggedIn = false
-                                    UserDefaults.standard.synchronize()
-                                    self.shouldExit = true
-                                    return
-                                } */
-                                
-                                
+                                self.freeScreen()
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
                                 let id = data["id"] as? String ?? ""
                                 
                                 Log.debug("Scanning for IV at \(lat) \(lon)")
                                 
-                                let start = Date()
                                 self.lock.lock()
                                 self.waitRequiresPokemon = true
                                 self.pokemonEncounterId = nil
@@ -1541,27 +1474,25 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.scatterPokemon = [[String: Any]]()
                                 self.lock.unlock()
                                 sleep(1 * self.config.delayMultiplier)
-                                
+                                let start = Date()
                                 var success = false
                                 var locked = true
                                 while locked {
                                     usleep(100000 * self.config.delayMultiplier)
-                                    self.lock.lock()
                                     if Date().timeIntervalSince(start) >= self.config.pokemonMaxTime {
                                         locked = false
                                         self.waitForData = false
                                         failedCount += 1
-                                        Log.debug("Pokemon loading timed out.")
+                                        print("[STATUS] Pokemon loading timed out.")
                                         self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
                                     } else {
                                         locked = self.waitForData
                                         if !locked {
                                             failedCount = 0
-                                            Log.debug("Pokemon loaded after \(Date().timeIntervalSince(start)).")
+                                            print("[STATUS] Pokemon loaded after \(Date().timeIntervalSince(start)).")
                                             success = true
                                         }
                                     }
-                                    self.lock.unlock()
                                 }
                                 
                                 if success {
@@ -1635,7 +1566,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         usleep(UInt32(delay * 1000000.0 * Double(self.config.delayMultiplier)))
                                         usleep(UInt32(1000000.0 * Double(self.config.encounterDelay)))
                                         
-                                        self.freeScreen()
                                         self.lock.unlock()
                                         var count = 0
                                         var done = false
@@ -1699,7 +1629,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         min: (red: 0.0, green: 0.0, blue: 0.0),
                         max: (red: 0.3, green: 0.5, blue: 0.5))
                     ) {
-                        Log.info("Clicking \"try again\" on failed login screen")
+                        Log.info("Clicking try another account on failed login screen")
                         deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
                         username = nil
                         isLoggedIn = false
@@ -1778,10 +1708,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 Log.info("Unregistered UI Interruption Monitor")
                 removeUIInterruptionMonitor(systemAlertMonitorToken)
             }
-       /*     Log.info("Force-Stopping \(self.server)")
-            self.server.stop(immediately: true)
-            Log.info("\(self.server) running: \(self.server.isRunning)") */
-
         }
         
         if !self.server.isRunning {
@@ -1801,10 +1727,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             self.currentLocation = self.config.startupLocation
             self.lock.unlock()
         }
-        
-
-        
-//        Log.info("Server running at localhost:\(config.port)")
         
         while true {
             switch lastTestIndex {

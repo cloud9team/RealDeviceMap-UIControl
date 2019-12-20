@@ -42,13 +42,13 @@ class DeviceRatio1333: DeviceConfigProtocol {
         return DeviceCoordinate(x: 222, y: 815, scaler: scaler)
     }
     var ageVerificationYear : DeviceCoordinate {
-        return DeviceCoordinate(x: 475, y: 690, scaler: scaler)
+        return DeviceCoordinate(x: 1025, y: 1235, scaler: scaler)
     }
     var ageVerificationDragStart : DeviceCoordinate {
-        return DeviceCoordinate(x: 475, y: 1025, scaler: scaler)
+        return DeviceCoordinate(x: 1025, y: 1025, scaler: scaler)
     }
     var ageVerificationDragEnd : DeviceCoordinate {
-        return DeviceCoordinate(x: 475, y: 380, scaler: scaler)
+        return DeviceCoordinate(x: 1025, y: 380, scaler: scaler)
     }
     var passenger: DeviceCoordinate {
         return DeviceCoordinate(x: 768, y: 1567, scaler: scaler)
@@ -57,7 +57,7 @@ class DeviceRatio1333: DeviceConfigProtocol {
         return DeviceCoordinate(x: 768, y: 1360, scaler: scaler)
     }
     var closeWeather1: DeviceCoordinate {
-        return DeviceCoordinate(x: 1300, y: 1700, scaler: scaler)
+        return DeviceCoordinate(x: 770, y: 1920, scaler: scaler)
     }
     var closeWeather2: DeviceCoordinate {
         return DeviceCoordinate(x: 768, y: 2000, scaler: scaler)
@@ -75,7 +75,7 @@ class DeviceRatio1333: DeviceConfigProtocol {
         return DeviceCoordinate(x: 1400, y: 1800, scaler: scaler)
     }
 	var closeFailedLogin: DeviceCoordinate {
-	    return DeviceCoordinate(x: 768, y: 1360, scaler: scaler)
+	    return DeviceCoordinate(x: 720, y: 1252, scaler: scaler)
 	}
 
     // MARK: - Misc
@@ -230,15 +230,15 @@ class DeviceRatio1333: DeviceConfigProtocol {
     }
     
     var loginBannedText: DeviceCoordinate {
-        return DeviceCoordinate(x: 551, y: 1170, scaler: scaler)
+        return DeviceCoordinate(x: 720, y: 1252, scaler: scaler)
     }
     
     var loginBanned: DeviceCoordinate {
-        return DeviceCoordinate(x: 768, y: 1030, scaler: scaler)
+        return DeviceCoordinate(x: 438, y: 1019, scaler: scaler)
     }
     
     var loginBannedSwitchAccount: DeviceCoordinate {
-        return DeviceCoordinate(x: 768, y: 1250, scaler: scaler)
+        return DeviceCoordinate(x: 720, y: 1252, scaler: scaler)
     }
     
     var loginTermsText: DeviceCoordinate {
@@ -409,7 +409,13 @@ class DeviceRatio1333: DeviceConfigProtocol {
     var adventureSyncButton: DeviceCoordinate {
         return DeviceCoordinate(x: 768, y: 1740, scaler: scaler)
     }
-    
+    /* these are not correct locations - need screenshot */
+    var enableAdventureSync: DeviceCoordinate {
+        return DeviceCoordinate(x: 320, y: 330, scaler: scaler)
+    }
+    var enableAdventureSyncClose: DeviceCoordinate {
+        return DeviceCoordinate(x: 310, y: 814, scaler: scaler)
+    }
     
     // MARK: - Team Select
 

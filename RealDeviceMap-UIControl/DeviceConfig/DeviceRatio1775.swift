@@ -60,10 +60,10 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 780, scaler: scaler)
     }
     var closeWeather1: DeviceCoordinate {
-        return DeviceCoordinate(x: 230, y: 1140, scaler: scaler)
+        return DeviceCoordinate(x: 70, y: 968, scaler: scaler)
     }
     var closeWeather2: DeviceCoordinate {
-        return DeviceCoordinate(x: 230, y: 1090, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 1080, scaler: scaler)
     }
     var closeWarning: DeviceCoordinate {
         return DeviceCoordinate(x: 310, y: 995, scaler: scaler)
@@ -104,7 +104,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 610, scaler: scaler)
     }
     var logoutCompareX: Int {
-        return scaler.scaleY(y: 478)
+        return scaler.scaleY(y: 425)
     }
 
     
@@ -408,7 +408,12 @@ class DeviceRatio1775: DeviceConfigProtocol {
     var adventureSyncButton: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 978, scaler: scaler)
     }
-    
+    var enableAdventureSync: DeviceCoordinate {
+        return DeviceCoordinate(x: 320, y: 330, scaler: scaler)
+    }
+    var enableAdventureSyncClose: DeviceCoordinate {
+        return DeviceCoordinate(x: 310, y: 814, scaler: scaler)
+    }
     
     // MARK: - Team Select
 

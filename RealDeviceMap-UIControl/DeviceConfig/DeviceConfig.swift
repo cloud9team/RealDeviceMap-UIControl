@@ -31,9 +31,9 @@ class DeviceConfig {
             case 320.0: // se, iphone 6, 7
                 global = DeviceRatio1775(width: Int(app.frame.size.width), height: Int(app.frame.size.height), multiplier: 1.0, tapMultiplier: tapMultiplier)
                 Log.debug("using 320 ratio1775 with tapmultiplier \(tapMultiplier)")
-            case 367.0: //  iphone 6, 7
+            case 375.0: //  iphone 6, 7
                 global = DeviceRatio1775(width: Int(app.frame.size.width), height: Int(app.frame.size.height), multiplier: 1.0, tapMultiplier: tapMultiplier)
-                Log.debug("using 367 ratio1775 with tapmultiplier \(tapMultiplier)")
+                Log.debug("using 375 ratio1775 with tapmultiplier \(tapMultiplier)")
             case 768.0: //ipad
                 global = DeviceRatio1333(width: Int(app.frame.size.width), height: Int(app.frame.size.height), multiplier: 1.0, tapMultiplier: tapMultiplier)
                 Log.debug("using ratio1333 with tapmultiplier \(tapMultiplier)")
