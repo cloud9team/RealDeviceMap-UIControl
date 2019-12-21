@@ -565,14 +565,14 @@ extension XCTestCase {
                 screenshot = clickPassengerWarning()
             }
         }
-        Log.debug("Checking for weather condition 1.")
+        Log.debug("Checking for weather condition.")
         if screenshot.rgbAtLocation(
             pos: deviceConfig.closeWeather1,
             min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)
         ) {
             Log.debug("Clearing weather warning.")
             deviceConfig.closeWeather1.toXCUICoordinate(app: app).tap()
-            sleep(2 * config.delayMultiplier)
+            sleep(3 * config.delayMultiplier)
             deviceConfig.closeWeather2.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
             screenshot = clickPassengerWarning()

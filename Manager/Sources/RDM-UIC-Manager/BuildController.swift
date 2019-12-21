@@ -242,42 +242,49 @@ class BuildController {
                         if string!.contains(string: "[STATUS] Tutorial") {
                             self.setStatus(uuid: device.uuid, status: "Running: Tutorial")
                         }
-                        if string!.contains(string: "[STATUS] Pokemon") {
-                             if string!.contains(string: "Account has") {
+                        if string!.contains(string: "[STATUS] Pokemon") && string!.contains(string: "Account has") {
                                 self.setStatus(uuid: device.uuid, status: "Running: Pokemon - Account Warned")
-                            } else if string!.contains(string: "Pokemon scan at") {
-                                //var statusUpdate = ?string.replacingOccurrences(of: "[STATUS] ", with: "")
-                                let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                                self.setStatus(uuid: device.uuid, status: statusUpdate)
-                            } else {
-                               
+                        } else if string!.contains(string: "[STATUS] Pokemon") && string!.contains(string: "Pokemon scan at") {
+                            let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                        } else {
+                            if string!.contains(string: "[STATUS] Pokemon") {
                                 self.setStatus(uuid: device.uuid, status: "Running: Pokemon")
                             }
                         }
-                        if string!.contains(string: "[STATUS] Raid") {
-                            if string!.contains(string: "Account has") {
-                                self.setStatus(uuid: device.uuid, status: "Running: Raid - Account Warned")
-                            } else if string!.contains(string: "Raid scan at") {
-                                let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                                self.setStatus(uuid: device.uuid, status: statusUpdate)
-                            } else {
+                        if string!.contains(string: "[STATUS] Raid") && string!.contains(string: "Account has") {
+                            self.setStatus(uuid: device.uuid, status: "Running: Raid - Account Warned")
+                        } else if string!.contains(string: "[STATUS] Raid") && string!.contains(string: "Raid scan at") {
+                            let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                        } else {
+                            if string!.contains(string: "[STATUS] Raid") {
                                 self.setStatus(uuid: device.uuid, status: "Running: Raid")
                             }
                         }
-                        if string!.contains(string: "[STATUS] Quest") {
-                            if string!.contains(string: "Account has") {
-                                self.setStatus(uuid: device.uuid, status: "Running: Quest - Account Warned")
-                            } else if string!.contains(string: "Quest at") {
-                                let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                                self.setStatus(uuid: device.uuid, status: statusUpdate)
-                            } else {
+                        if string!.contains(string: "[STATUS] Quest") && string!.contains(string: "Account has") {
+                            self.setStatus(uuid: device.uuid, status: "Running: Quest - Account Warned")
+                        } else if string!.contains(string: "[STATUS] Quest") && string!.contains(string: "Quest at") {
+                            let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                        } else if string!.contains(string: "[STATUS] Quest") && string!.contains(string: "Error at") {
+                            let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                        } else {
+                            if string!.contains(string: "[STATUS] Quest") {
                                 self.setStatus(uuid: device.uuid, status: "Running: Quest")
                             }
                         }
-                        if string!.contains(string: "[STATUS] IV") {
-                            if string!.contains(string: "Account has") {
-                                self.setStatus(uuid: device.uuid, status: "Running: IV - Account Warned")
-                            } else {
+                        if string!.contains(string: "[STATUS] IV") && string!.contains(string: "Account has") {
+                            self.setStatus(uuid: device.uuid, status: "Running: IV - Account Warned")
+                        } else if string!.contains(string: "[STATUS] IV") && string!.contains(string: "IV scan at") {
+                            let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                        } else if string!.contains(string: "[STATUS] IV") && string!.contains(string: "IV - Pokemon loading") {
+                            let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                        } else {
+                            if string!.contains(string: "[STATUS] IV") {
                                 self.setStatus(uuid: device.uuid, status: "Running: IV")
                             }
                         }
