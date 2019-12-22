@@ -37,7 +37,7 @@ class BuildController {
     private func setStatus(uuid: String, dateStarted:String, status: String) {
         statusLock.lock()
         statuse[uuid] = status
-        statusf[uuid] = String(format: "%.0f", dateStarted)
+        statusf[uuid] = dateStartedg
         statusLock.unlock()
     }
     
