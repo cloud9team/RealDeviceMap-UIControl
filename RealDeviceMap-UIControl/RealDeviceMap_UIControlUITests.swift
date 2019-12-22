@@ -37,6 +37,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var encounterDelay = 1.0
     var server = Server()
     var level: Int = 0
+    var encounterCount = 0
     var cooldown = true
     var systemAlertMonitorToken: NSObjectProtocol? = nil
     var accountAvailable = true
@@ -851,6 +852,13 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             jsonData!["pokemon_encounter_id_for_encounter"] = pokemonEncounterIdForEncounter
             jsonData!["list_scatter_pokemon"] = listScatterPokemon
             jsonData!["uuid"] = self.config.uuid
+            let contents = jsonData!["contents"] as? [[String: Any]]
+            for rawData in contents! {
+                let method = rawData["method"] as? Int
+                if method == 102 {
+                    self.encounterCount += 1
+                }
+            }
             if self.config.verbose {
                 let contents = jsonData!["contents"] as? [[String: Any]]
                 
@@ -892,7 +900,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     self.level = level
                 }
                 
-                let toPrint: String
+//                let toPrint: String
                 
                 self.lock.lock()
                 let diffLat = fabs((self.currentLocation?.lat ?? 0) - targetLat)
@@ -900,53 +908,28 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 
                 if onlyInvalidGmos {
                     self.waitForData = false
-                    toPrint = "[DEBUG] Got GMO but it was malformed. Skipping."
+                    Log.debug("Got GMO but it was malformed. Skipping.")
                 } else if containsGmos {
                     if inArea && diffLat < 0.0001 && diffLon < 0.0001 {
                         self.emptyGmoCount = 0
-                        
-                        if self.pokemonEncounterId != nil {
+                        if self.waitRequiresPokemon {
                             if (nearby + wild) > 0 {
-                                if pokemonLat != nil && pokemonLon != nil && self.pokemonEncounterId == pokemonEncounterIdResult {
-                                    self.waitRequiresPokemon = false
-                                    let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
-                                    self.currentLocation = (pokemonLat!, pokemonLon!)
-                                    let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
-                                    self.encounterDistance = newLocation.distance(from: oldLocation)
-                                    self.pokemonEncounterId = nil
-                                    if self.listScatterPokemon {
-                                        self.listScatterPokemon = false
-                                        self.scatterPokemon = data?["scatter_pokemon"] as? [[String: Any]] ?? [[String: Any]]()
-                                    }
-                                    self.waitForData = false
-                                    toPrint = "[DEBUG] Got Data and found Pokemon"
-                                } else {
-                                    toPrint = "[DEBUG] Got Data but didn't find Pokemon"
-                                }
-                            } else {
-                                toPrint = "[DEBUG] Got Data without Pokemon"
-                            }
-                            
-                        } else if self.waitRequiresPokemon {
-                            if (nearby + wild) > 0 {
-                                toPrint = "[DEBUG] Got Data with Pokemon"
+                                Log.debug("Got Data with Pokemon")
                                 self.waitForData = false
                             } else {
-                                toPrint = "[DEBUG] Got Data without Pokemon"
+                                Log.debug("Got Data without Pokemon")
                             }
                         } else {
-                            toPrint = "[DEBUG] Data"
+                            Log.debug("Data")
                             self.waitForData = false
                         }
                     } else if onlyEmptyGmos {
                         self.emptyGmoCount += 1
-                        toPrint = "[DEBUG] Got Empty Data"
+                        Log.debug("Got Empty Data")
                     } else {
                         self.emptyGmoCount = 0
-                        toPrint = "[DEBUG] Got Data outside Target-Area"
+                        Log.debug("Got Data outside Target-Area")
                     }
-                } else {
-                    toPrint = "[DEBUG] ."
                 }
                 if !self.gotQuest && quests != 0 {
                     self.gotQuest = true
@@ -955,7 +938,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     self.gotIV = true
                 }
                 self.lock.unlock()
-                print(toPrint)
             })
         }
         
@@ -1199,7 +1181,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                             if hasWarning {
                                                 print("[STATUS] Pokemon - Account has warning")
                                             } else {
-                                                print("[STATUS] Pokemon scan at \(lat2),\(lon2) loaded: \(loadTime)")
+                                            
+                                                print("[STATUS] Pokemon scan at \(lat2),\(lon2) loaded: \(loadTime) Encounters: \(self.encounterCount)")
                                             }
                                         }
                                     }
@@ -1264,7 +1247,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 // _ = data["delay"] as? Double ?? 0
                                 let wait = 60
                                 Log.debug("Scanning for Quest at \(lat) \(lon)")
-                                if (!self.config.ultraQuests) {
+                                if !self.config.ultraQuests {
                                     self.zoom(out: false, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
                                 }
                                 ////// if ultra quest, skip /////////////
@@ -1473,8 +1456,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.currentLocation = (lat, lon)
                                 self.waitForData = true
                                 self.encounterDelay = self.config.encounterDelay
-                                self.listScatterPokemon = true
-                                self.scatterPokemon = [[String: Any]]()
+//                                self.listScatterPokemon = true
+//                                self.scatterPokemon = [[String: Any]]()
                                 self.lock.unlock()
                                 sleep(1 * self.config.delayMultiplier)
                                 let start = Date()
@@ -1496,102 +1479,24 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                                 print("[STATUS] IV - Account has warning")
                                             } else {
                                                 let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
-                                                print("[STATUS] IV scan at \(lat2),\(lon2) loaded: \(loadTime).")
+                                                print("[STATUS] IV scan at \(lat2),\(lon2) loaded: \(loadTime) Encounters: \(self.encounterCount)")
                                             }
                                          //   success = true
                                         }
                                     }
                                 }
-                                
-                                /* if success {
-                                    
-                                    self.lock.lock()
-                                    if (self.encounterDistance > 75){
-                                            self.encounterDistance = 75;
-                                    }
-                                    let delay = 1.0 + (3 / 75 * self.encounterDistance)
-                                    self.lock.unlock()
-                                    usleep(UInt32(delay * 1000000.0 * Double(self.config.delayMultiplier)))
-                                    usleep(UInt32(1000000.0 * Double(self.config.encounterDelay)))
-                                    self.lock.lock()
-                                    self.gotIV = false
-                                    self.pokemonEncounterIdForEncounter = nil
-                                    self.lock.unlock()
-                                    self.lock.lock()
-                                    if self.gotIV {
-                                        self.noEncounterCount = 0
-                                        self.gotIV = false
-                                        Log.debug("Got iv at \(lat), \(lon)")
-                                    } else {
-                                        self.noEncounterCount += 1
-                                        Log.debug("Failed to get IVs at \(self.currentLocation!)")
-                                    }
-                                        self.lock.unlock()
-                                } else {
-                                    var count = 0
-                                    var done = false
-                                    while count < 3 && !done {
-                                        done = self.prepareEncounter()
-                                        count += 1
-                                    }
-                                            
-                                    self.lock.lock()
-                                    if !done {
-                                        self.noEncounterCount += 1
-                                    } else {
-                                        self.noEncounterCount = 0
-                                    }
-                                    self.lock.unlock()
-                                } */
-                                    
-                                
-                                    
-                                    self.lock.lock()
-                                    let scatterPokemon = self.scatterPokemon
-                                    self.lock.unlock()
-                                    
-                                    for pokemon in scatterPokemon {
-                                        let lat = pokemon["lat"] as? Double ?? 0
-                                        let lon = pokemon["lon"] as? Double ?? 0
-                                        
-                                        self.lock.lock()
-                                        self.pokemonEncounterIdForEncounter = pokemon["id"] as? String 
-                                        let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
-                                        self.currentLocation = (lat, lon)
-                                        let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
-                                        self.encounterDistance = newLocation.distance(from: oldLocation)
-                                        if (self.encounterDistance > 75){
-                                                self.encounterDistance = 75;
-                                        }
-                                        let delay = 1.0 + (3 / 75 * self.encounterDistance)
-                                        self.lock.unlock()
-                                        usleep(UInt32(delay * 1000000.0 * Double(self.config.delayMultiplier)))
-                                        usleep(UInt32(1000000.0 * Double(self.config.encounterDelay)))
-                                        
-                                        self.lock.unlock()
-                                        var count = 0
-                                        var done = false
-                                        while count < 3 && !done {
-                                                
-                                            done = self.prepareEncounter()
-                                            count += 1
-                                        }
-                                }
-                                
                             } else {
                                 Log.error("Unkown Action: \(action)")
                             }
-
                             if self.emptyGmoCount >= self.config.maxEmptyGMO {
                                 Log.error("Exceeded Emtpy GMO Count \(self.emptyGmoCount). Increase Max Empty Gmo or Check Accouunt Status.")
                                 self.emptyGmoCount = 0
                             // Reset Counter. kick error to logs/don't kill app    self.app.terminate()
                             }
-                            
                             if failedCount >= self.config.maxFailedCount {
                                 Log.error("Exceeded Failed Count  \(failedCount). Increase Max Failed Count or Check Accouunt Status.")
                                 failedCount = 0
-                            // Reset Counter. kick error to logs/don't kill app                                    self.app.terminate()
+                            // Reset Counter. kick error to logs/don't kill app
                             }
 
                         } else {
@@ -1725,11 +1630,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             } catch {
                 Log.error("Failed to start server: \(error). Trying again...")
             }
-         /*   self.lock.lock()
-            self.currentLocation = self.config.startupLocation
-            self.lock.unlock() */
         }
-        
         while true {
             switch lastTestIndex {
             case 0:

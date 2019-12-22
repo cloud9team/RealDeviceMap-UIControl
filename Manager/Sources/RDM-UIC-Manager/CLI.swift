@@ -107,6 +107,7 @@ class CLI {
     private func status() {
         clear()
         var run = true
+        
         let queue = Threading.getQueue(name: "CLI-Status", type: .serial)
         queue.dispatch {
             while run {
@@ -115,9 +116,11 @@ class CLI {
                 var rows = [[String]]()
                 for device in devices {
                     let status = BuildController.global.getStatus(uuid: device.uuid) ?? "?"
-                    rows.append([device.name, status])
+                    let running = BuildController.global.getTime(uuid: device.uuid) ?? "?"
+                    
+                    rows.append([device.name, running, status])
                 }
-                self.printTable(headers: ["Name", "Status"], rows: rows)
+                self.printTable(headers: ["Name", "Run Time", "Status"], rows: rows)
                 print("\nPress enter to exit...")
                 Threading.sleep(seconds: 1)
             }

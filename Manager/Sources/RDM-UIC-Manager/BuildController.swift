@@ -31,21 +31,28 @@ class BuildController {
     private var buildingCount = 0
     
     private var statuse = [String: String]()
+    private var statusf = [String: String]()
     private var statusLock = Threading.Lock()
 
-    private func setStatus(uuid: String, status: String) {
+    private func setStatus(uuid: String, dateStarted:String, status: String) {
         statusLock.lock()
         statuse[uuid] = status
+        statusf[uuid] = String(format: "%.0f", dateStarted)
         statusLock.unlock()
     }
     
+    public func getTime(uuid: String) -> String? {
+        statusLock.lock()
+        let dateStarted = statusf[uuid]
+        statusLock.unlock()
+        return dateStarted
+    }
     public func getStatus(uuid: String) -> String? {
         statusLock.lock()
         let status = statuse[uuid]
         statusLock.unlock()
         return status
     }
-    
     public func start(path: String, derivedDataPath: String, timeout: Int, maxSimultaneousBuilds: Int) {
         
         self.path = path
@@ -141,7 +148,8 @@ class BuildController {
             
             for device in devicesToAdd {
                 if device.enabled == 0 {
-                    self.setStatus(uuid: device.uuid, status: "Disabled")
+                    let disabledtimestamp = String(Date().timeIntervalSince1970)
+                    self.setStatus(uuid: device.uuid, dateStarted: disabledtimestamp, status: "Disabled")
                     continue
                 }
                 
@@ -193,7 +201,8 @@ class BuildController {
                 let errorPipe = Pipe()
             
                 Log.debug(message: "[\(device.name)] Waiting for build lock...")
-                self.setStatus(uuid: device.uuid, status: "Waiting for build")
+                let buildtimestamp = String(Date().timeIntervalSince1970)
+                self.setStatus(uuid: device.uuid, dateStarted: buildtimestamp, status: "Waiting for build")
                 locked = true
                 self.buildLock.lock()
                 while self.buildingCount >= self.maxSimultaneousBuilds {
@@ -208,9 +217,10 @@ class BuildController {
                 lastChangedLock.unlock()
             
                 Log.info(message: "[\(device.name)] Starting xcodebuild")
-                self.setStatus(uuid: device.uuid, status: "Building")
+                let timestamp = String(Date().timeIntervalSince1970)
+                self.setStatus(uuid: device.uuid, dateStarted: timestamp, status: "Building")
             
-                let timestamp = Int(Date().timeIntervalSince1970)
+               
                 let fullLog = FileLogger(file: "./logs/\(device.name)-\(timestamp)-xcodebuild.full.log")
                 let debugLog = FileLogger(file: "./logs/\(device.name)-\(timestamp)-xcodebuild.debug.log")
             
@@ -224,75 +234,75 @@ class BuildController {
                         
                         if string!.contains(string: "[STATUS] Started") && locked {
                             Log.debug(message: "[\(device.name)] Done building")
-                            self.setStatus(uuid: device.uuid, status: "Running: Starting")
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Starting")
                             locked = false
                             self.buildLock.lock()
                             self.buildingCount -= 1
                             self.buildLock.unlock()
                         }
                         if string!.contains(string: "[STATUS] Startup") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Startup")
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Startup")
                         }
                         if string!.contains(string: "[STATUS] Logout") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Logout")
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Logout")
                         }
                         if string!.contains(string: "[STATUS] Login") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Login")
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Login")
                         }
                         if string!.contains(string: "[STATUS] Tutorial") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Tutorial")
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Tutorial")
                         }
                         if string!.contains(string: "[STATUS] Pokemon") && string!.contains(string: "Account has") {
-                                self.setStatus(uuid: device.uuid, status: "Running: Pokemon - Account Warned")
+                                self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Pokemon - Account Warned")
                         } else if string!.contains(string: "[STATUS] Pokemon") && string!.contains(string: "Pokemon scan at") {
                             let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: statusUpdate)
                         } else {
                             if string!.contains(string: "[STATUS] Pokemon") {
-                                self.setStatus(uuid: device.uuid, status: "Running: Pokemon")
+                                self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Pokemon")
                             }
                         }
                         if string!.contains(string: "[STATUS] Raid") && string!.contains(string: "Account has") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Raid - Account Warned")
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Raid - Account Warned")
                         } else if string!.contains(string: "[STATUS] Raid") && string!.contains(string: "Raid scan at") {
                             let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: statusUpdate)
                         } else {
                             if string!.contains(string: "[STATUS] Raid") {
-                                self.setStatus(uuid: device.uuid, status: "Running: Raid")
+                                self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Raid")
                             }
                         }
                         if string!.contains(string: "[STATUS] Quest") && string!.contains(string: "Account has") {
-                            self.setStatus(uuid: device.uuid, status: "Running: Quest - Account Warned")
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Quest - Account Warned")
                         } else if string!.contains(string: "[STATUS] Quest") && string!.contains(string: "Quest at") {
                             let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: statusUpdate)
                         } else if string!.contains(string: "[STATUS] Quest") && string!.contains(string: "Error at") {
                             let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: statusUpdate)
                         } else {
                             if string!.contains(string: "[STATUS] Quest") {
-                                self.setStatus(uuid: device.uuid, status: "Running: Quest")
+                                self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: Quest")
                             }
                         }
                         if string!.contains(string: "[STATUS] IV") && string!.contains(string: "Account has") {
-                            self.setStatus(uuid: device.uuid, status: "Running: IV - Account Warned")
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: IV - Account Warned")
                         } else if string!.contains(string: "[STATUS] IV") && string!.contains(string: "IV scan at") {
                             let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: statusUpdate)
                         } else if string!.contains(string: "[STATUS] IV") && string!.contains(string: "IV - Pokemon loading") {
                             let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
-                            self.setStatus(uuid: device.uuid, status: statusUpdate)
+                            self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: statusUpdate)
                         } else {
                             if string!.contains(string: "[STATUS] IV") {
-                                self.setStatus(uuid: device.uuid, status: "Running: IV")
+                                self.setStatus(uuid: device.uuid, dateStarted: String(timestamp), status: "Running: IV")
                             }
                         }
                         if string!.contains(string: "no job left (Got result:") {
-                            self.setStatus(uuid: device.uuid, status: "Completed: Need Assignment")
+                            self.setStatus(uuid: device.uuid, dateStarted: timestamp, status: "Completed: Need Assignment")
                         }
                         if string!.contains(string: "IV Queue Empty") {
-                            self.setStatus(uuid: device.uuid, status: "IV Queue Empty")
+                            self.setStatus(uuid: device.uuid, dateStarted: timestamp, status: "IV Queue Empty")
                         }
 
             
