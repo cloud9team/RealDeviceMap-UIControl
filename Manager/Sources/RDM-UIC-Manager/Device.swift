@@ -60,7 +60,7 @@ class Device: SQLiteStORM, Equatable, Hashable {
         self.backendURL = ""
         self.enableAccountManager = 0
         self.port = 8080
-        self.pokemonMaxTime = 45.0
+        self.pokemonMaxTime = 25.0
         self.raidMaxTime = 25.0
         self.maxWarningTimeRaid = 432000
         self.delayMultiplier = 1
@@ -71,16 +71,16 @@ class Device: SQLiteStORM, Equatable, Hashable {
         self.itemsPerStop = 10
         self.minDelayLogout = 180
         self.maxNoQuestCount = 5
-        self.maxFailedCount = 5
-        self.maxEmptyGMO = 5
-        self.startupLocationLat = 1
-        self.startupLocationLon = 1
+        self.maxFailedCount = 20
+        self.maxEmptyGMO = 50
+        self.startupLocationLat = 35.914067
+        self.startupLocationLon = -5.418532
         self.encounterMaxWait = 7
         self.encounterDelay = 1.0
         self.fastIV = 0
-        self.ultraIV = 0
-        self.ultraQuests = 0
-        self.deployEggs = 0
+        self.ultraIV = 1
+        self.ultraQuests = 1
+        self.deployEggs = 1
         
         super.init()
     }
@@ -130,7 +130,7 @@ class Device: SQLiteStORM, Equatable, Hashable {
         backendURL = this.data["backendURL"] as? String ?? ""
         enableAccountManager = this.data["enableAccountManager"] as? Int ?? 0
         port = this.data["port"] as? Int ?? 8080
-        pokemonMaxTime = this.data["pokemonMaxTime"] as? Double ?? 45.0
+        pokemonMaxTime = this.data["pokemonMaxTime"] as? Double ?? 25.0
         raidMaxTime = this.data["raidMaxTime"] as? Double ?? 25.0
         maxWarningTimeRaid = this.data["maxWarningTimeRaid"] as? Int ?? 432000
         delayMultiplier = this.data["delayMultiplier"] as? Int ?? 1
@@ -141,16 +141,16 @@ class Device: SQLiteStORM, Equatable, Hashable {
         itemsPerStop = this.data["itemsPerStop"] as? Int ?? 10
         minDelayLogout = this.data["minDelayLogout"] as? Double ?? 180
         maxNoQuestCount = this.data["maxNoQuestCount"] as? Int ?? 5
-        maxFailedCount = this.data["maxFailedCount"] as? Int ?? 5
-        maxEmptyGMO = this.data["maxEmptyGMO"] as? Int ?? 5
+        maxFailedCount = this.data["maxFailedCount"] as? Int ?? 20
+        maxEmptyGMO = this.data["maxEmptyGMO"] as? Int ?? 50
         startupLocationLat = this.data["startupLocationLat"] as? Double ?? 1
         startupLocationLon = this.data["startupLocationLon"] as? Double ?? 1
         encounterMaxWait = this.data["encounterMaxWait"] as? Int ?? 7
         encounterDelay = this.data["encounterDelay"] as? Double ?? 1.0
         fastIV = this.data["fastIV"] as? Int ?? 0
-        ultraIV = this.data["ultraIV"] as? Int ?? 0
-        ultraQuests = this.data["ultraQuests"] as? Int ?? 0
-        deployEggs = this.data["deployEggs"] as? Int ?? 0
+        ultraIV = this.data["ultraIV"] as? Int ?? 1
+        ultraQuests = this.data["ultraQuests"] as? Int ?? 1
+        deployEggs = this.data["deployEggs"] as? Int ?? 1
 
     }
     

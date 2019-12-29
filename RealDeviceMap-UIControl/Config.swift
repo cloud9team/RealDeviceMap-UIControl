@@ -47,7 +47,7 @@ class Config {
         backendURLBaseString = enviroment["backendURL"] ?? ""
         enableAccountManager = enviroment["enableAccountManager"]?.toBool() ?? false
         port = enviroment["port"]?.toInt() ?? 8080
-        pokemonMaxTime = enviroment["pokemonMaxTime"]?.toDouble() ?? 45.0
+        pokemonMaxTime = enviroment["pokemonMaxTime"]?.toDouble() ?? 25.0
         raidMaxTime = enviroment["raidMaxTime"]?.toDouble() ?? 25.0
         maxWarningTimeRaid = enviroment["maxWarningTimeRaid"]?.toInt() ?? 432000
         delayMultiplier = enviroment["delayMultiplier"]?.toUInt32() ?? 1
@@ -59,18 +59,18 @@ class Config {
         minDelayLogout = enviroment["minDelayLogout"]?.toDouble() ?? 180.0
         maxNoQuestCount = enviroment["maxNoQuestCount"]?.toInt() ?? 5
         maxNoEncounterCount = enviroment["maxNoEncounterCount"]?.toInt() ?? 5
-        maxFailedCount = enviroment["maxFailedCount"]?.toInt() ?? 5
-        maxEmptyGMO = enviroment["maxEmptyGMO"]?.toInt() ?? 5
-        let startupLat = enviroment["startupLocationLat"]?.toDouble() ?? 1.0
-        let startupLon = enviroment["startupLocationLon"]?.toDouble() ?? 1.0
+        maxFailedCount = enviroment["maxFailedCount"]?.toInt() ?? 20
+        maxEmptyGMO = enviroment["maxEmptyGMO"]?.toInt() ?? 50
+        let startupLat = enviroment["startupLocationLat"]?.toDouble() ?? 35.914067
+        let startupLon = enviroment["startupLocationLon"]?.toDouble() ?? -5.418532
         startupLocation = (startupLat, startupLon)
         encounterMaxWait = enviroment["encounterMaxWait"]?.toUInt32() ?? 7
         encounterDelay = enviroment["encounterDelay"]?.toDouble() ?? 1.0
         fastIV = enviroment["fastIV"]?.toBool() ?? false
-        ultraIV = enviroment["ultraIV"]?.toBool() ?? false
-        deployEggs = enviroment["deployEggs"]?.toBool() ?? false
+        ultraIV = enviroment["ultraIV"]?.toBool() ?? true
+        deployEggs = enviroment["deployEggs"]?.toBool() ?? true
         token = enviroment["token"] ?? ""
-        ultraQuests = enviroment["ultraQuests"]?.toBool() ?? false
+        ultraQuests = enviroment["ultraQuests"]?.toBool() ?? true
         enabled = enviroment["enabled"]?.toBool() ?? true
     }
     

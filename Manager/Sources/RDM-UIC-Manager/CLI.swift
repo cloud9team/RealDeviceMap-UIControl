@@ -116,11 +116,16 @@ class CLI {
                 var rows = [[String]]()
                 for device in devices {
                     let status = BuildController.global.getStatus(uuid: device.uuid) ?? "?"
-                    let running = BuildController.global.getTime(uuid: device.uuid) ?? "?"
+                    let startupTime = BuildController.global.getTime(uuid: device.uuid) ?? 0
+                    let buildTime = Date(timeIntervalSince1970: Double(startupTime))
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "h:mm a"
+                    
+                    let running =  dateFormatter.string(from: buildTime)
                     
                     rows.append([device.name, running, status])
                 }
-                self.printTable(headers: ["Name", "Run Time", "Status"], rows: rows)
+                self.printTable(headers: ["Name", "Start Time", "Status"], rows: rows)
                 print("\nPress enter to exit...")
                 Threading.sleep(seconds: 1)
             }

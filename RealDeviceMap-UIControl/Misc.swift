@@ -627,7 +627,15 @@ extension XCTestCase {
     func logOut() -> Bool {
         
         print("[STATUS] Logout")
-        
+        let tapMultiplier: Double
+        if #available(iOS 13.0, *)
+        {
+            tapMultiplier = 0.5
+        }
+        else
+        {
+            tapMultiplier = 1.0
+        }
         let normalized = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
         var found = false
         deviceConfig.closeMenu.toXCUICoordinate(app: app).tap()
@@ -642,7 +650,7 @@ extension XCTestCase {
                 pos: (x: deviceConfig.logoutCompareX, y: y * 10),
                 min: (red: 0.60, green: 0.9, blue: 0.6),
                 max: (red: 0.75, green: 1.0, blue: 0.7)) {
-                normalized.withOffset(CGVector(dx: deviceConfig.logoutCompareX, dy: y * 10)).tap()
+                normalized.withOffset(CGVector(dx: lround(Double(deviceConfig.logoutCompareX)*tapMultiplier), dy: lround(Double(y * 10)*tapMultiplier))).tap()
                 found = true
                 break
             }
@@ -658,7 +666,7 @@ extension XCTestCase {
                     max: (red: 0.75, green: 1.0, blue: 0.7)) {
                     Log.debug("logoutCompareX location check tap at \(normalized.withOffset(CGVector(dx: deviceConfig.logoutCompareX, dy: y * 10)))")
                     
-                    normalized.withOffset(CGVector(dx: deviceConfig.logoutCompareX, dy: y * 10)).tap()
+                    normalized.withOffset(CGVector(dx: lround(Double(deviceConfig.logoutCompareX)*tapMultiplier), dy: lround(Double(y * 10)*tapMultiplier))).tap()
                     found = true
                     break
                 }
