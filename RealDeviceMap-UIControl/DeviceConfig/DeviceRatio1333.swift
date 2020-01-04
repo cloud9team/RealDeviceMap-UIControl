@@ -35,20 +35,20 @@ class DeviceRatio1333: DeviceConfigProtocol {
         return DeviceCoordinate(x: 462, y: 1226, scaler: scaler) //was 1234
     }
     var startupLoggedOut: DeviceCoordinate {
-        return DeviceCoordinate(x: 807, y: 177, scaler: scaler)
+        return DeviceCoordinate(x: 402, y: 250, scaler: scaler)
     }
     //Find coords by scaling to 640x1136
     var ageVerification : DeviceCoordinate {
-        return DeviceCoordinate(x: 222, y: 815, scaler: scaler)
+        return DeviceCoordinate(x: 910, y: 1470, scaler: scaler)
     }
     var ageVerificationYear : DeviceCoordinate {
-        return DeviceCoordinate(x: 1025, y: 1235, scaler: scaler)
+        return DeviceCoordinate(x: 1040, y: 1230, scaler: scaler)
     }
     var ageVerificationDragStart : DeviceCoordinate {
-        return DeviceCoordinate(x: 1025, y: 1025, scaler: scaler)
+        return DeviceCoordinate(x: 1040, y: 1800, scaler: scaler)
     }
     var ageVerificationDragEnd : DeviceCoordinate {
-        return DeviceCoordinate(x: 1025, y: 380, scaler: scaler)
+        return DeviceCoordinate(x: 1040, y: 580, scaler: scaler)
     }
     var passenger: DeviceCoordinate {
         return DeviceCoordinate(x: 768, y: 1567, scaler: scaler)
@@ -91,10 +91,10 @@ class DeviceRatio1333: DeviceConfigProtocol {
         return DeviceCoordinate(x: 1445, y: 270, scaler: scaler)
     }
     var logoutDragStart: DeviceCoordinate {
-        return DeviceCoordinate(x: 768, y: 1980, scaler: scaler)
+        return DeviceCoordinate(x: 152, y: 1640, scaler: scaler)
     }
     var logoutDragEnd: DeviceCoordinate {
-        return DeviceCoordinate(x: 768, y: 0, scaler: scaler)
+        return DeviceCoordinate(x: 152, y: 610, scaler: scaler)
     }
     var logoutConfirm: DeviceCoordinate {
         return DeviceCoordinate(x: 768, y: 1025, scaler: scaler)

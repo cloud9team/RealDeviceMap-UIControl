@@ -39,9 +39,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var level: Int = 0
     var encounterCount = 0
     var cooldown = true
+    var waitForRaids = false
     var systemAlertMonitorToken: NSObjectProtocol? = nil
     var accountAvailable = true
     var shouldExit: Bool {
+        
         get {
             return UserDefaults.standard.bool(forKey: "should_exit")
         }
@@ -879,7 +881,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let level = data?["level"] as? Int ?? 0
                 let nearby = data?["nearby"] as? Int ?? 0
                 let wild = data?["wild"] as? Int ?? 0
-                // let forts = data?["forts"] as? Int ?? 0
+                let forts = data?["forts"] as? Int ?? 0
                 let quests = data?["quests"] as? Int ?? 0
                 let encounters = data?["encounters"] as? Int ?? 0
                 let pokemonLat = data?["pokemon_lat"] as? Double
@@ -936,6 +938,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 }
                 if !self.gotIV && encounters != 0 {
                     self.gotIV = true
+                }
+                if self.waitForRaids && forts != 0 {
+                    self.waitForRaids = false
+                    Log.debug("Raid - Forts Parsed: \(forts)")
                 }
                 self.lock.unlock()
             })
@@ -1194,29 +1200,43 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
+                                let lat2 = String(format: "%.5f", lat)
+                                let lon2 = String(format: "%.5f", lon)
                                 Log.debug("Scanning for Raid at \(lat) \(lon)")
+                                let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude:
+                                    self.currentLocation!.lon)
                                 
+                                self.lock.lock()
+                                self.currentLocation = (lat, lon)
+                                self.lock.unlock()
+                                let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
+                                self.encounterDistance = newLocation.distance(from: oldLocation)
                                 let start = Date()
                                 self.lock.lock()
                                 self.currentLocation = (lat, lon)
                                 self.waitRequiresPokemon = false
                                 self.targetMaxDistance = self.config.targetMaxDistance
-                                self.waitForData = true
+                                self.waitForRaids = true
                                 self.lock.unlock()
-                                
                                 var locked = true
+                                Log.debug("distance: \(self.encounterDistance)")
                                 while locked {
+                                    //let forts = data["forts"] as? Int ?? 0
                                     usleep(100000 * self.config.delayMultiplier)
                                     self.lock.lock()
+                                    
                                     if Date().timeIntervalSince(start) >= self.config.raidMaxTime {
                                         locked = false
-                                        self.waitForData = false
+                                        self.waitForRaids = false
                                         failedCount += 1
-                                        self.freeScreen()
-                                        Log.debug("Raids loading timed out.")
+                                        if !self.config.ultraIV {
+                                            self.freeScreen()
+                                        }
+                                        let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
+                                        print("[STATUS] Raid scan at \(lat2),\(lon2) Error loading timed out: \(loadTime)s")
                                         self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
                                     } else {
-                                        locked = self.waitForData
+                                        locked = self.waitForRaids
                                         if !locked {
                                             failedCount = 0
                                             let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
@@ -1225,7 +1245,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                             if hasWarning {
                                                 print("[STATUS] Raid - Account has warning")
                                             } else {
-                                                print("[STATUS] Raid scan at \(lat2),\(lon2) loaded: \(loadTime)")
+                                                print("[STATUS] Raid scan at \(lat2),\(lon2) loaded: \(loadTime)s")
                                             }
                                         }
                                     }
