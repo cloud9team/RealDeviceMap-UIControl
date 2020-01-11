@@ -333,10 +333,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     }
     
     func part1LoginSetup() {
-        self.lock.lock()
-        self.currentLocation = self.config.startupLocation
-        self.lock.unlock()
-        Log.debug("Set startup location to \(self.currentLocation ?? nil)")
+       // self.lock.lock()
+       // self.currentLocation = self.config.startupLocation
+       // self.lock.unlock()
+       // Log.debug("Set startup location to \(self.currentLocation ?? nil)")
 
         if shouldExit || !config.enableAccountManager {
             return
@@ -1594,9 +1594,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         
         if out != zoomedOut {
 
-            self.lock.lock()
-            self.currentLocation = self.config.startupLocation
-            self.lock.unlock()
+          //  self.lock.lock()
+          //  self.currentLocation = self.config.startupLocation
+          //  self.lock.unlock()
             
             sleep(2 * self.config.delayMultiplier)
             
