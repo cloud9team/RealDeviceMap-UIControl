@@ -35,15 +35,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var scatterPokemon = [[String: Any]]()
     var encounterDistance = 0.0
     var encounterDelay = 1.0
-    var server = Server()
+    
     var level: Int = 0
-    var encounterCount = 0
-    var cooldown = true
-    var waitForRaids = false
     var systemAlertMonitorToken: NSObjectProtocol? = nil
-    var accountAvailable = true
+    
     var shouldExit: Bool {
-        
         get {
             return UserDefaults.standard.bool(forKey: "should_exit")
         }
@@ -123,7 +119,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var maxLevel: Int {
         get {
             if UserDefaults.standard.object(forKey: "max_level") == nil {
-                return 30
+                return 29
             }
             return UserDefaults.standard.integer(forKey: "max_level")
         }
@@ -162,22 +158,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         backendRawURL = URL(string: config.backendURLBaseString + "/raw")!
         continueAfterFailure = true
         needsLogout = false
-
-        addTeardownBlock {
-            Log.info("Force-Stopping \(self.server)")
-            self.server.stop(immediately: true)
-            Log.info("\(self.server) running: \(self.server.isRunning)")
-
-        }
-    }
         
-
+    }
     
     func part0Setup() {
-        if !self.server.isRunning {
-            Log.debug("Server not running. Returning to setup.")
-            setUp()
-        }
+        
         print("[STATUS] Started")
         
         shouldExit = false
@@ -189,7 +174,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             self.systemAlertMonitorToken = nil
         }
         
-    //    app.terminate()
+        app.terminate()
 
         // Wake up device if screen is off (recently rebooted), then press home to get to home screen.
         Log.info("Waking up the device")
@@ -225,7 +210,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             }
             if let firstWarningTimestamp = data!["first_warning_timestamp"] as? Int {
                 self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
-                 Log.info("Account retrieved has warning.")
             }
 
             Log.info("Connected to Backend succesfully")
@@ -237,30 +221,26 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
         
         if username == nil && config.enableAccountManager {
-            if !self.accountAvailable {
-                self.lock.lock()
-                sleep(5 * config.delayMultiplier)
-                self.lock.unlock()
-                self.accountAvailable = true
-            }
             postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "get_account", "min_level": minLevel, "max_level": maxLevel], blocking: true) { (result) in
-                guard let data = result!["data"] as? [String: Any] else {
-                        Log.error("Failed to get account.")
-                        self.accountAvailable = false
-                     //   self.shouldExit = true
+                guard
+                    let data = result!["data"] as? [String: Any],
+                    let username = data["username"] as? String,
+                    let password = data["password"] as? String
+                    else {
+                        Log.error("Failed to get account and not logged in.")
+                        self.shouldExit = true
                         return
                 }
-                self.username = data["username"] as? String
-                self.password = data["password"] as? String
+                self.username = username
+                self.password = password
                 self.newLogIn = true
                 self.isLoggedIn = false
                 
                 if let firstWarningTimestamp = data["first_warning_timestamp"] as? Int {
                     self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
-                    Log.debug("account warned in db: \(self.firstWarningDate ?? Date())")
                 }
                 
-                Log.info("Got account \(self.username ?? "null") from backend.")
+                Log.info("Got account \(username) from backend.")
             }
         }
         
@@ -305,26 +285,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 alwaysButton.tap()
             }
             
-            let laterButton = alert.buttons["Later"]
-            if laterButton.exists {
-                laterButton.tap()
-            }
-            
-            let remindmelaterButton = alert.buttons["Remind Me Later"]
-            if remindmelaterButton.exists {
-                remindmelaterButton.tap()
-            }
-            
-            let closeButton = alert.buttons["Close"]
-            if closeButton.exists {
-                closeButton.tap()
-            }
-            
-            let allowWhileUsingButton = alert.buttons["Allow While Using App"]
-            if allowWhileUsingButton.exists {
-                allowWhileUsingButton.tap()
-            }
-
             return true
         }
 
@@ -333,14 +293,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     }
     
     func part1LoginSetup() {
-        self.lock.lock()
-        self.currentLocation = self.config.startupLocation
-        self.lock.unlock()
-        Log.debug("Set startup location to \(self.currentLocation ?? nil)")
-
+        
         if shouldExit || !config.enableAccountManager {
             return
         }
+        
         if username != nil && !isLoggedIn {
             
             print("[STATUS] Login")
@@ -379,7 +336,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 pos: self.deviceConfig.ageVerification,
                 min: (0.15, 0.33, 0.17),
                 max: (0.25, 0.43, 0.27)) {
-                Log.debug("Setting age verification.")
+                Log.debug("App is in age verification.")
                 
                 print("[STATUS] Age verification")
                 //Open the year select
@@ -410,7 +367,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
         
         if username != nil && !isLoggedIn {
-            Log.debug("Entering account details for: \(username ?? "No username")")
+            
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginUsernameTextfield.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
@@ -426,7 +383,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
         
         if username != nil && !isLoggedIn {
-            Log.debug("Entering password for: \(username ?? "No username")")
+            
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginPasswordTextfield.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
@@ -441,9 +398,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         if shouldExit || !config.enableAccountManager {
             return
         }
-
-
-
+        
         if username != nil && !isLoggedIn {
             
             sleep(1 * config.delayMultiplier)
@@ -545,15 +500,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     loggedIn = true
                     isLoggedIn = true
                     Log.info("Logged in as \(username!)")
-                    if (screenshotComp.rgbAtLocation(
-                        pos: deviceConfig.loginBannedBackground,
-                        min: (red: 0.0, green: 0.2, blue: 0.3),
-                        max: (red: 0.05, green: 0.3, blue: 0.4))
-                        ) {
-                        Log.debug("Got ban. Restarting...")
-                        app.launch()
-                        sleep(10 * config.delayMultiplier)
-                    }
                 } else {
                     count += 1
                     if count == 60 {
@@ -779,7 +725,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     self.jitterCorner = 0
                 }
                 //"scan_iv", "scan_pokemon", "scan_raids"
-                var actions = [String]()
+                var actions = [] as NSArray
                 if (self.level > 29) {
                     actions = ["pokemon"]
                 }
@@ -792,12 +738,14 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 ]
             } else {
                 self.lock.unlock()
-                    var actions = [String]()
+                    var actions = [] as NSArray
                     if (self.config.ultraIV == true && self.level > 29) {
                         actions = ["pokemon"]
-                    }
-                    if !self.cooldown && self.config.ultraQuests {
-                            actions = ["pokestop"]
+                        if (self.action == "scan_quest") {
+                            actions = ["pokestop", "pokemon"]
+                        } else if (self.config.ultraQuests == false) {
+                            actions = ["pokemon"]
+                        }
                     }
                 responseData = [
                     "latitude": currentLocation!.lat,
@@ -807,22 +755,17 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     "actions": actions
                 ]
             }
-            if self.config.verbose {
-                Log.debug("*****ACTIONS= \(responseData["actions"] ?? "")")
-            }
         } else {
             self.lock.unlock()
             responseData = [String: Any]()
         }
         do {
-            
             let jsonData = try JSONSerialization.data(withJSONObject: responseData, options: .prettyPrinted)
             let jsonString = String(data: jsonData, encoding: .utf8) ?? ""
             
-            let response = HTTPResponse(content: jsonString)
-            response.headers = ["Content-Type": "application/json"]
-            
-            return response
+            let repsonse = HTTPResponse(content: jsonString)
+            repsonse.headers = ["Content-Type": "application/json"]
+            return repsonse
         } catch {
             return HTTPResponse(.internalServerError)
         }
@@ -854,24 +797,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             jsonData!["pokemon_encounter_id_for_encounter"] = pokemonEncounterIdForEncounter
             jsonData!["list_scatter_pokemon"] = listScatterPokemon
             jsonData!["uuid"] = self.config.uuid
-            let contents = jsonData!["contents"] as? [[String: Any]]
-            for rawData in contents! {
-                let method = rawData["method"] as? Int
-                if method == 102 {
-                    self.encounterCount += 1
-                }
-            }
-            if self.config.verbose {
-                let contents = jsonData!["contents"] as? [[String: Any]]
-                
-                for rawData in contents! {
-                    _ = rawData["data"] as? String
-                    let method = rawData["method"] as? Int
-                    Log.debug("**rawData method: \(method ?? 0)**")
-                
-                }
-                
-              }
+            
             let url = self.backendRawURL
             
             self.postRequest(url: url!, data: jsonData!, blocking: false, completion: { (resultJson) in
@@ -881,7 +807,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let level = data?["level"] as? Int ?? 0
                 let nearby = data?["nearby"] as? Int ?? 0
                 let wild = data?["wild"] as? Int ?? 0
-                let forts = data?["forts"] as? Int ?? 0
+                //let forts = data?["forts"] as? Int ?? 0
                 let quests = data?["quests"] as? Int ?? 0
                 let encounters = data?["encounters"] as? Int ?? 0
                 let pokemonLat = data?["pokemon_lat"] as? Double
@@ -892,17 +818,20 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let onlyEmptyGmos = data?["only_empty_gmos"] as? Bool ?? true
                 let onlyInvalidGmos = data?["only_invalid_gmos"] as? Bool ?? false
                 let containsGmos = data?["contains_gmos"] as? Bool ?? true
-
-                if self.config.verbose {
-                        Log.debug("POSTREQUEST----------------------------------")
-                        Log.debug("data = \(String(describing: data))")
-                }
+/* uncomment for request response data
+                Log.debug("postRequest-----------------------------------")
+                Log.debug("data = \(String(describing: jsonData))")
+                Log.debug("-------------------------------------------")
+                Log.debug(". . . . . . . . . . . . . . . . . . . . .  .")
+                Log.debug("Response-----------------------------------")
+                Log.debug("data = \(String(describing: data))")
+                Log.debug("-------------------------------------------") */
                 
                 if level != 0 {
                     self.level = level
                 }
                 
-//                let toPrint: String
+                let toPrint: String
                 
                 self.lock.lock()
                 let diffLat = fabs((self.currentLocation?.lat ?? 0) - targetLat)
@@ -910,28 +839,53 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 
                 if onlyInvalidGmos {
                     self.waitForData = false
-                    Log.debug("Got GMO but it was malformed. Skipping.")
+                    toPrint = "[DEBUG] Got GMO but it was malformed. Skipping."
                 } else if containsGmos {
                     if inArea && diffLat < 0.0001 && diffLon < 0.0001 {
                         self.emptyGmoCount = 0
-                        if self.waitRequiresPokemon {
+                        
+                        if self.pokemonEncounterId != nil {
                             if (nearby + wild) > 0 {
-                                Log.debug("Got Data with Pokemon")
+                                if pokemonLat != nil && pokemonLon != nil && self.pokemonEncounterId == pokemonEncounterIdResult {
+                                    self.waitRequiresPokemon = false
+                                    let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
+                                    self.currentLocation = (pokemonLat!, pokemonLon!)
+                                    let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
+                                    self.encounterDistance = newLocation.distance(from: oldLocation)
+                                    self.pokemonEncounterId = nil
+                                    if self.listScatterPokemon {
+                                        self.listScatterPokemon = false
+                                        self.scatterPokemon = data?["scatter_pokemon"] as? [[String: Any]] ?? [[String: Any]]()
+                                    }
+                                    self.waitForData = false
+                                    toPrint = "[DEBUG] Got Data and found Pokemon"
+                                } else {
+                                    toPrint = "[DEBUG] Got Data but didn't find Pokemon"
+                                }
+                            } else {
+                                toPrint = "[DEBUG] Got Data without Pokemon"
+                            }
+                            
+                        } else if self.waitRequiresPokemon {
+                            if (nearby + wild) > 0 {
+                                toPrint = "[DEBUG] Got Data with Pokemon"
                                 self.waitForData = false
                             } else {
-                                Log.debug("Got Data without Pokemon")
+                                toPrint = "[DEBUG] Got Data without Pokemon"
                             }
                         } else {
-                            Log.debug("Data")
+                            toPrint = "[DEBUG] Data"
                             self.waitForData = false
                         }
                     } else if onlyEmptyGmos {
                         self.emptyGmoCount += 1
-                        Log.debug("Got Empty Data")
+                        toPrint = "[DEBUG] Got Empty Data"
                     } else {
                         self.emptyGmoCount = 0
-                        Log.debug("Got Data outside Target-Area")
+                        toPrint = "[DEBUG] Got Data outside Target-Area"
                     }
+                } else {
+                    toPrint = "[DEBUG] ."
                 }
                 if !self.gotQuest && quests != 0 {
                     self.gotQuest = true
@@ -939,11 +893,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 if !self.gotIV && encounters != 0 {
                     self.gotIV = true
                 }
-                if self.waitForRaids && forts != 0 {
-                    self.waitForRaids = false
-                    Log.debug("Raid - Forts Parsed: \(forts)")
-                }
                 self.lock.unlock()
+                print(toPrint)
             })
         }
         
@@ -956,6 +907,30 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             return
         }
         
+        let server = Server()
+        var started = false
+        var startTryCount = 1
+        while !started {
+            do {
+                try server.start(onPort: UInt16(self.config.port))
+                started = true
+            } catch {
+                if startTryCount == 5 {
+                    fatalError("Failed to start server: \(error). Try (\(startTryCount)/5).")
+                }
+                ///////// Temp fix for port in use error. Need to add stop server on app exit ///////////////////
+                Log.error("Failed to start server: \(error). Try (\(startTryCount)/5). Trying again...")
+                startTryCount += 1
+                sleep(UInt32(15 * startTryCount))
+            }
+        }
+        server.route(HTTPMethod.GET, "loc", handleLocRequest)
+        server.route(HTTPMethod.POST, "loc", handleLocRequest)
+        server.route(HTTPMethod.GET, "data", handleDataRequest)
+        server.route(HTTPMethod.POST, "data", handleDataRequest)
+    
+        Log.info("Server running at localhost:\(config.port)")
+        
         // Start Heartbeat
         var dispatchQueueRunning = true
         DispatchQueue(label: "heartbeat_sender").async {
@@ -963,9 +938,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(15)
                 self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "heartbeat"]) { (cake) in /* The cake is a lie! */ }
             }
+            Log.info("Force-Stopping HTTP Server")
+            server.stop(immediately: true)
         }
+        
+        // Stop Heartbeat if we exit the scope
         defer {
-             Log.debug("------------------------stopped dispatchqueue")
             dispatchQueueRunning = false
         }
         
@@ -1024,43 +1002,21 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 if !isStartupCompleted {
                     
                     Log.debug("Performing Startup sequence")
-                   // currentLocation = config.startupLocation
+                    currentLocation = config.startupLocation
                     isStartup()
                     sleep(2 * config.delayMultiplier)
                     
                     deviceConfig.closeNews.toXCUICoordinate(app: app).tap()
-                    Log.debug("Checking for account warning")
                     sleep(1 * config.delayMultiplier)
                     hasWarning = self.checkHasWarning()
                     if hasWarning {
+                        if self.firstWarningDate == nil && config.enableAccountManager {
+                            firstWarningDate = Date()
+                            postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_warning"], blocking: true) { (result) in }
+                        }
+                        Log.info("Account has a warning!")
                         deviceConfig.closeWarning.toXCUICoordinate(app: app).tap()
                         sleep(1 * config.delayMultiplier)
-                        if self.config.enableAccountManager {
-                            firstWarningDate = Date()
-                            self.postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_warning"], blocking: true) { (result) in }
-
-                            Log.info("Logging out...")
-                            let success = self.logOut()
-                            if success {
-                                self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
-                            } else {
-                                self.needsLogout = true
-                                return
-                            }
-                            
-                            
-                            self.username = nil
-                            self.isLoggedIn = false
-                            UserDefaults.standard.synchronize()
-                            self.shouldExit = true
-                            return
-                        
-                            
-                            /*                        if self.firstWarningDate == nil && config.enableAccountManager {
-                            firstWarningDate = Date()
-                            postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_warning"], blocking: true) { (result) in } */
-                        }
-                        
                     }
                     
                     sleep(2 * config.delayMultiplier)
@@ -1108,7 +1064,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 } else {
                     
                     // Work work work
-                    
                     postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "get_job"], blocking: true) { (result) in
                         
                         if result == nil {
@@ -1148,7 +1103,22 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                             self.action = action
 //////--------- Scan Pokemon-----------------/////////////////
                             if action == "scan_pokemon" {
-                               
+                                print("[STATUS] Pokemon")
+                                if hasWarning && self.config.enableAccountManager {
+                                    Log.info("Account has a warning and tried to scan for Pokemon. Logging out!")
+                                    let success = self.logOut()
+                                    if !success {
+                                        self.needsLogout = true
+                                        return
+                                    }
+                                    
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
+                                    self.username = nil
+                                    self.isLoggedIn = false
+                                    UserDefaults.standard.synchronize()
+                                    self.shouldExit = true
+                                    return
+                                }
                                 
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
@@ -1162,6 +1132,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.currentLocation = (lat, lon)
                                 self.waitForData = true
                                 self.lock.unlock()
+                               // Log.debug("Scanning prepared")
                                 
                                 var locked = true
                                 while locked {
@@ -1180,16 +1151,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         locked = self.waitForData
                                         if !locked {
                                             failedCount = 0
-                                           // Log.debug("Pokemon loaded after \(Date().timeIntervalSince(start)).")
-                                            let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
-                                            let lat2 = String(format: "%.5f", lat)
-                                            let lon2 = String(format: "%.5f", lon)
-                                            if hasWarning {
-                                                print("[STATUS] Pokemon - Account has warning")
-                                            } else {
-                                            
-                                                print("[STATUS] Pokemon scan at \(lat2),\(lon2) loaded: \(loadTime) Encounters: \(self.encounterCount)")
-                                            }
+                                            Log.debug("Pokemon loaded after \(Date().timeIntervalSince(start)).")
                                         }
                                     }
                                     self.lock.unlock()
@@ -1197,78 +1159,100 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 
                             } else if action == "scan_raid" {
 ///////----- Scan Raid-------------////////////////////////
-                                
-                                let lat = data["lat"] as? Double ?? 0
-                                let lon = data["lon"] as? Double ?? 0
-                                let lat2 = String(format: "%.5f", lat)
-                                let lon2 = String(format: "%.5f", lon)
-                                Log.debug("Scanning for Raid at \(lat) \(lon)")
-                                let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude:
-                                    self.currentLocation!.lon)
-                                
-                                self.lock.lock()
-                                self.currentLocation = (lat, lon)
-                                self.lock.unlock()
-                                let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
-                                self.encounterDistance = newLocation.distance(from: oldLocation)
-                                let start = Date()
-                                self.lock.lock()
-                                self.currentLocation = (lat, lon)
-                                self.waitRequiresPokemon = false
-                                self.targetMaxDistance = self.config.targetMaxDistance
-                                self.waitForRaids = true
-                                self.lock.unlock()
-                                var locked = true
-                                Log.debug("distance: \(self.encounterDistance)")
-                                while locked {
-                                    //let forts = data["forts"] as? Int ?? 0
-                                    usleep(100000 * self.config.delayMultiplier)
-                                    self.lock.lock()
-                                    
-                                    if Date().timeIntervalSince(start) >= self.config.raidMaxTime {
-                                        locked = false
-                                        self.waitForRaids = false
-                                        failedCount += 1
-                                        if !self.config.ultraIV {
-                                            self.freeScreen()
-                                        }
-                                        let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
-                                        print("[STATUS] Raid scan at \(lat2),\(lon2) Error loading timed out: \(loadTime)s")
-                                        self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
-                                    } else {
-                                        locked = self.waitForRaids
-                                        if !locked {
-                                            failedCount = 0
-                                            let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
-                                            let lat2 = String(format: "%.5f", lat)
-                                            let lon2 = String(format: "%.5f", lon)
-                                            if hasWarning {
-                                                print("[STATUS] Raid - Account has warning")
-                                            } else {
-                                                print("[STATUS] Raid scan at \(lat2),\(lon2) loaded: \(loadTime)s")
-                                            }
-                                        }
+                                print("[STATUS] Raid")
+                                if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
+                                    Log.info("Account has a warning and is over maxWarningTimeRaid. Logging out!")
+                                    let success = self.logOut()
+                                    if !success {
+                                        self.needsLogout = true
+                                        return
                                     }
-                                    self.lock.unlock()
-                                }
-                            } else if action == "scan_quest" {
-///////------ Scan Quest --------------------///////////////////
-                                guard self.noQuestCount <= self.config.maxNoQuestCount else {
-                                    Log.debug("Missed Quest Exceeded Config")
-                                    self.app.terminate()
+                                    
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
+                                    self.username = nil
+                                    self.isLoggedIn = false
+                                    UserDefaults.standard.synchronize()
                                     self.shouldExit = true
                                     return
                                 }
                                 
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
-                                let lat2 = String(format: "%.5f", lat)
-                                let lon2 = String(format: "%.5f", lon)
-                                // _ = data["delay"] as? Double ?? 0
-                                let wait = 60
+                                Log.debug("Scanning for Raid at \(lat) \(lon)")
+                                
+                                let start = Date()
+                                self.lock.lock()
+                                self.currentLocation = (lat, lon)
+                                self.waitRequiresPokemon = false
+                                self.targetMaxDistance = self.config.targetMaxDistance
+                                self.waitForData = true
+                                self.lock.unlock()
+                               // Log.debug("Scanning prepared")
+                                
+                                var locked = true
+                                while locked {
+                                    usleep(100000 * self.config.delayMultiplier)
+                                    self.lock.lock()
+                                    if Date().timeIntervalSince(start) >= self.config.raidMaxTime {
+                                        locked = false
+                                        self.waitForData = false
+                                        failedCount += 1
+                                        self.freeScreen()
+                                        Log.debug("Raids loading timed out.")
+                                        self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
+                                    } else {
+                                        locked = self.waitForData
+                                        if !locked {
+                                            failedCount = 0
+                                            Log.debug("Raids loaded after \(Date().timeIntervalSince(start)).")
+                                        }
+                                    }
+                                    self.lock.unlock()
+                                }
+                            } else if action == "scan_quest" {
+///////------ Scan Quest --------------------///////////////////
+                                print("[STATUS] Quest")
+                                
+                                let lat = data["lat"] as? Double ?? 0
+                                let lon = data["lon"] as? Double ?? 0
+                                let delayb = data["delay"] as? Double ?? 0
+                                let wait = 60.0
                                 Log.debug("Scanning for Quest at \(lat) \(lon)")
-                                if !self.config.ultraQuests {
+                                if (!self.config.ultraQuests) {
                                     self.zoom(out: false, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
+                                }
+                                
+                                if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
+                                    Log.info("Account has a warning and is over maxWarningTimeRaid. Logging out!")
+                                    let success = self.logOut()
+                                    if !success {
+                                        self.needsLogout = true
+                                        return
+                                    }
+                                    
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
+                                    self.username = nil
+                                    self.isLoggedIn = false
+                                    UserDefaults.standard.synchronize()
+                                    self.shouldExit = true
+                                    return
+                                }
+                                
+                                if delayb >= self.config.minDelayLogout && self.config.enableAccountManager {
+                                    Log.debug("Switching account. Delay too large.")
+                                    let success = self.logOut()
+                                    if !success {
+                                        self.needsLogout = true
+                                        return
+                                    }
+                                    
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
+                                    self.username = nil
+                                    self.isLoggedIn = false
+                                    UserDefaults.standard.synchronize()
+                                    self.shouldExit = true
+                                    return
                                 }
                                 ////// if ultra quest, skip /////////////
                                 if (!self.config.ultraQuests) {
@@ -1292,6 +1276,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 }
                                 //////// end skip code for ultra quest /////////
                                 self.newCreated = false
+                                
+                                
                                 let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude:
                                     self.currentLocation!.lon)
                                 
@@ -1311,108 +1297,86 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.app.swipeLeft()
                                 }
                                 Log.debug("Calculating Cooldown . . .")
-                                var cooldownTime = 15
+                                var cooldown = 120.0
                                 if self.questCount > 0 {
-                                    cooldownTime = Int(round(self.encounterDistance / 60))
+                                    cooldown = round(self.encounterDistance / 60)
                                 }
-                                let delay = (wait + cooldownTime)
-                                
-                                if Double(delay) >= self.config.minDelayLogout && self.config.enableAccountManager {
-                                    Log.debug("Switching account. Delay too large.")
-                                    let success = self.logOut()
-                                    if !success {
-                                        self.needsLogout = true
-                                        return
-                                    }
-                                    
-                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
-                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
-                                    self.username = nil
-                                    self.isLoggedIn = false
-                                    UserDefaults.standard.synchronize()
-                                    self.shouldExit = true
-                                    return
-                                }
+                                var delay = (wait + cooldown)
                                 
                                 let start = Date()
                                 var success = false
                                 var locked = true
-                                Log.debug("Traveled \(self.encounterDistance) Cooldown time: \(cooldownTime)s. ")
-                                Log.debug("Action: \(self.action ?? "missing")")
+                                Log.debug("Traveled \(self.encounterDistance) Delaying by \(delay)s. ")
+                                
                                 while locked {
+                                    
                                     usleep(100000 * self.config.delayMultiplier)
                                     ///////// Check if quest was close enough to catch from previous location ///////
-                                    if self.encounterDistance > 0.0 && self.encounterDistance <= 40.0 && self.questCount > 0 {
-                                       // locked = false
+                                    if self.encounterDistance <= 40.0 && self.questCount > 0 {
+                                        locked = false
                                         self.waitForData = false
                                         self.gotQuest = true
-                                       // self.questCount += 1
-                                       // self.noQuestCount = 0
+                                        self.questCount += 1
+                                        self.noQuestCount = 0
                                         Log.debug("Multi-Quest Add \(lat), \(lon) Distance \(self.encounterDistance) ")
+                                        return
                                     }
-                                    if cooldownTime == 1 {
-                                        Log.debug("Cooldown disabled after \(Date().timeIntervalSince(start)).")
-                                        cooldownTime = 0
-                                    } else if cooldownTime > 1 {
-                                        sleep(1)
-                                        Log.debug("Cooldown time remaining: \(cooldownTime)")
-                                        cooldownTime -= 1
-                                        continue
-                                    }
-                                    sleep(1)
-                                    self.cooldown = false
-                                    
-                                    if !self.gotQuest {
-                                        let delay = Double(delay) - Date().timeIntervalSince(start)
-                                        guard delay > 3.0 else {
-                                            locked = false
-                                            self.waitForData = false
-                                            failedCount += 1
-                                            self.noQuestCount += 1
-                                            print("[STATUS] Quest Error at \(lat2), \(lon2) Count: \(self.questCount) | Missed: \(self.noQuestCount)")
-                                            return
-                                        }
-                                        Log.debug("Waiting \(delay)s for quest data...")
-                                        usleep(UInt32(min(1, delay) * 1000000))
-                                        continue
-                                    }
-                                    
-                                    self.lock.lock()
-                                    guard Date().timeIntervalSince(start) <= self.config.raidMaxTime + Double(delay) else {
+                                    ////////// Delay should never hit zero. If we hit zero, something wrong. ///////
+                                    guard delay > 1.0 else {
+                                        delay = 0.0
                                         locked = false
                                         self.waitForData = false
                                         failedCount += 1
                                         self.noQuestCount += 1
+                                        Log.debug("Aborting...Unkown condition at \(lat), \(lon) Distance: \(self.encounterDistance) Cooldown: \(cooldown)")
+                                        self.shouldExit = true
+                                        break
+                                    }
+                                    if !self.gotQuest {
+                                        let delay =  delay - Date().timeIntervalSince(start)
+                                        Log.debug("Delaying by \(delay)s")
+                                        usleep(UInt32(min(3.0, delay) * 1000000.0))
+                                        continue
+                                    }
+                                    
+                                    self.lock.lock()
+                                    if Date().timeIntervalSince(start) >= self.config.raidMaxTime + delay {
+                                        locked = false
+                                        self.waitForData = false
+                                        failedCount += 1
                                         Log.debug("Pokestop loading timed out.")
                                         self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
-                                        return
-                                    }
-                                    locked = self.waitForData
-                                    if !locked {
-                                        success = true
-                                        failedCount = 0
+                                    } else {
+                                        locked = self.waitForData
+                                        if !locked {
+                                            delay = 0.0
+                                            success = true
+                                            failedCount = 0
+                                            Log.debug("Cooldown disabled after \(Date().timeIntervalSince(start)).")
+                                        }
                                     }
                                     self.lock.unlock()
                                 }
                                 
                                 // keep rolling count of quests
                                 self.lock.lock()
-                                
                                 if self.gotQuest {
                                     self.questCount += 1
                                     self.noQuestCount = 0
-                                    self.cooldown = true
-                                    if hasWarning {
-                                        print("[STATUS] Quest - Account has warning")
-                                    } else {
-                                        print("[STATUS] Quest at \(lat2), \(lon2) Count: \(self.questCount) | Missed: \(self.noQuestCount)")
-                                    }
+                                    Log.debug("Got Quest at \(lat), \(lon) - Quest Count: \(self.questCount) | Missed Count: \(self.noQuestCount)")
                                 } else {
                                     self.noQuestCount += 1
-                                    print("[STATUS] Quest at \(lat2), \(lon2) Count: \(self.questCount) | Missed: \(self.noQuestCount)")
+                                    Log.debug("Missed Quest at: \(lat), \(lon) - Missed Count: \(self.noQuestCount)")
+                                }
+                                self.gotQuest = false
+                                
+                                if self.noQuestCount >= self.config.maxNoQuestCount {
+                                    self.lock.unlock()
+                                    Log.debug("Missed Quest Exceeded Config")
+                                    self.app.terminate()
+                                    self.shouldExit = true
                                 }
                                 self.lock.unlock()
-                                self.gotQuest = false
                                 /////////// if ultra quest, skip /////////////////
                                 if (!self.config.ultraQuests) {
                                     if success {
@@ -1455,20 +1419,34 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 return
                             } else if action == "scan_iv" {
 ////---------- Scan IV ---------------------////////////
-                                guard self.noEncounterCount <= self.config.maxNoEncounterCount else {
-                                    Log.debug("Stuck somewhere. Restarting")
-                                    self.app.terminate()
+                                print("[STATUS] IV")
+                                if hasWarning && self.firstWarningDate != nil && Int(Date().timeIntervalSince(self.firstWarningDate!)) >= self.config.maxWarningTimeRaid && self.config.enableAccountManager {
+                                    Log.info("Account has a warning and is over maxWarningTimeRaid. Logging out!")
+                                    let success = self.logOut()
+                                    if !success {
+                                        self.needsLogout = true
+                                        return
+                                    }
+                                    
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
+                                    self.username = nil
+                                    self.isLoggedIn = false
+                                    UserDefaults.standard.synchronize()
                                     self.shouldExit = true
                                     return
                                 }
+                                
+                                if !self.config.ultraIV {
+                                    self.zoom(out: true, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
+                                }
+                                
                                 let lat = data["lat"] as? Double ?? 0
                                 let lon = data["lon"] as? Double ?? 0
-                                let lat2 = String(format: "%.5f", lat)
-                                let lon2 = String(format: "%.5f", lon)
-                               // let id = data["id"] as? String ?? ""
+                                let id = data["id"] as? String ?? ""
                                 
                                 Log.debug("Scanning for IV at \(lat) \(lon)")
                                 
+                                let start = Date()
                                 self.lock.lock()
                                 self.waitRequiresPokemon = true
                                 self.pokemonEncounterId = nil
@@ -1476,53 +1454,249 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.currentLocation = (lat, lon)
                                 self.waitForData = true
                                 self.encounterDelay = self.config.encounterDelay
-//                                self.listScatterPokemon = true
-//                                self.scatterPokemon = [[String: Any]]()
+                                self.listScatterPokemon = true
+                                self.scatterPokemon = [[String: Any]]()
                                 self.lock.unlock()
+                              // Log.debug("Scanning prepared")
                                 sleep(1 * self.config.delayMultiplier)
-                                let start = Date()
-                               // var success = false
+                                //////////// if ultra iv, skip ///////
+                                if !self.config.ultraIV {
+                                    self.freeScreen()
+
+                                    //Twice for good measure just in case we get deep into a gym
+                                    sleep(1 * self.config.delayMultiplier)
+                                    self.freeScreen()
+                                }
+                                /////////// end skip ultrra iv //////////
+                                var success = false
                                 var locked = true
                                 while locked {
                                     usleep(100000 * self.config.delayMultiplier)
+                                    self.lock.lock()
                                     if Date().timeIntervalSince(start) >= self.config.pokemonMaxTime {
                                         locked = false
                                         self.waitForData = false
                                         failedCount += 1
-                                        print("[STATUS] IV - Pokemon loading timed out. Failed: \(failedCount)")
+                                        ///////// uiv skip //////
+                                        if !self.config.ultraIV {
+                                            self.freeScreen()
+                                        }
+                                        /////// end uiv skip/////
+                                        Log.debug("Pokemon loading timed out.")
                                         self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
                                     } else {
                                         locked = self.waitForData
                                         if !locked {
                                             failedCount = 0
-                                            if hasWarning {
-                                                print("[STATUS] IV - Account has warning")
-                                            } else {
-                                                let loadTime = String(format: "%.2f", Date().timeIntervalSince(start))
-                                                print("[STATUS] IV scan at \(lat2),\(lon2) loaded: \(loadTime) Encounters: \(self.encounterCount)")
-                                            }
-                                         //   success = true
+                                            Log.debug("Pokemon loaded after \(Date().timeIntervalSince(start)).")
+                                            success = true
                                         }
                                     }
+                                    self.lock.unlock()
                                 }
+                                
+                                if success {
+                                    
+                                    self.lock.lock()
+                                    if (self.encounterDistance > 75){
+                                            self.encounterDistance = 75;
+                                    }
+                                    let delay = 1.0 + (3 / 75 * self.encounterDistance)
+                                    self.lock.unlock()
+                                    usleep(UInt32(delay * 1000000.0 * Double(self.config.delayMultiplier)))
+
+                                    usleep(UInt32(1000000.0 * Double(self.config.encounterDelay)))
+                                    self.lock.lock()
+                                    self.gotIV = false
+                                    self.pokemonEncounterIdForEncounter = nil
+                                    self.lock.unlock()
+                                    ///// if ultra iv, skip //////////////
+                                    if !self.config.ultraIV {
+                                        encounter_loop: for count in 0..<5 {
+                                                if (count > 0){
+                                                        //Wait for gotIV
+                                                        let wait_starttime = DispatchTime.now();
+                                                        while DispatchTime.now() < wait_starttime + 2.0 {
+                                                                usleep(100000)
+                                                                if self.gotIV {
+                                                                        break encounter_loop;
+                                                                }
+                                                        }
+                                                        //Retry after turning the screen:
+                                                        self.freeScreen()
+                                                        self.app.swipeLeft()
+                                                }
+                                                self.deviceConfig.encounterPokemonLower.toXCUICoordinate(app: self.app).tap()
+                                                usleep(300000)
+                                                if self.gotIV {
+                                                        break encounter_loop;
+                                                }
+                                                self.deviceConfig.encounterPokemonUpper.toXCUICoordinate(app: self.app).tap()
+                                                usleep(300000)
+                                                if self.gotIV {
+                                                        break encounter_loop;
+                                                }
+                                                //Needed for flying pokemon
+                                                self.deviceConfig.encounterPokemonUpperHigher.toXCUICoordinate(app: self.app).tap()
+                                        }
+                                        //// end skip ultra iv //////////////
+                                        self.lock.lock()
+                                        if self.gotIV {
+                                                self.noEncounterCount = 0
+                                                self.gotIV = false
+                                            Log.debug("Got iv at \(lat), \(lon)")
+                                             //   Log.debug("IV Scan Successful for \(self.pokemonEncounterIdForEncounter!)")
+                                        } else {
+                                                self.noEncounterCount += 1
+                                                Log.debug("Failed to get IVs at \(self.currentLocation!)")
+                                        }
+                                        self.lock.unlock()
+                                    } else {
+                                        var count = 0
+                                        var done = false
+                                        while count < 3 && !done {
+                                        ///// if ultra iv, skip //////
+                                            if !self.config.ultraIV {
+                                                self.freeScreen()
+                                                if count != 0 {
+                                                    self.app.swipeLeft()
+                                                }
+                                                self.deviceConfig.encounterPokemonLower.toXCUICoordinate(app: self.app).tap()
+                                                usleep(300000)
+                                                self.deviceConfig.encounterPokemonUpper.toXCUICoordinate(app: self.app).tap()
+                                                usleep(300000)
+                                                self.deviceConfig.encounterPokemonUpperHigher.toXCUICoordinate(app: self.app).tap()
+                                                sleep(2 * self.config.delayMultiplier)
+                                            }
+                                         ///// end skip ultra iv - prepareEncounter handles logic for uiv ///////
+                                            done = self.prepareEncounter()
+                                            count += 1
+                                        }
+                                            
+                                        self.lock.lock()
+                                        if !done {
+                                            self.noEncounterCount += 1
+                                        } else {
+                                            self.noEncounterCount = 0
+                                        }
+                                        self.lock.unlock()
+                                    }
+                                    
+                                    if self.noEncounterCount >= self.config.maxNoEncounterCount {
+                                        self.lock.unlock()
+                                        Log.debug("Stuck somewhere. Restarting")
+                                        self.app.terminate()
+                                        self.shouldExit = true
+                                        return
+                                    }
+                                    
+                                    self.lock.lock()
+                                    let scatterPokemon = self.scatterPokemon
+                                    self.lock.unlock()
+                                    
+                                    for pokemon in scatterPokemon {
+                                        let lat = pokemon["lat"] as? Double ?? 0
+                                        let lon = pokemon["lon"] as? Double ?? 0
+                                        
+                                        self.lock.lock()
+                                        self.pokemonEncounterIdForEncounter = pokemon["id"] as? String 
+                                        let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
+                                        self.currentLocation = (lat, lon)
+                                        let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
+                                        self.encounterDistance = newLocation.distance(from: oldLocation)
+                                        if (self.encounterDistance > 75){
+                                                self.encounterDistance = 75;
+                                        }
+                                        let delay = 1.0 + (3 / 75 * self.encounterDistance)
+                                        self.lock.unlock()
+                                        usleep(UInt32(delay * 1000000.0 * Double(self.config.delayMultiplier)))
+                                        usleep(UInt32(1000000.0 * Double(self.config.encounterDelay)))
+                                        
+                                        self.freeScreen()
+                                        /////////// if ultra iv, skip /////////////
+                                        if !self.config.ultraIV {
+                                            encounter_loop: for count in 0..<2 {
+                                                    if (count > 0){
+                                                            //Wait for gotIV
+                                                            let wait_starttime = DispatchTime.now();
+                                                            while DispatchTime.now() < wait_starttime + 2.0 {
+                                                                    usleep(100000)
+                                                                    if self.gotIV {
+                                                                            break encounter_loop;
+                                                                    }
+                                                            }
+                                                            //Retry after turning the screen:
+                                                            self.freeScreen()
+                                                            self.app.swipeLeft()
+                                                    }
+                                                    self.deviceConfig.encounterPokemonLower.toXCUICoordinate(app: self.app).tap()
+                                                    usleep(300000)
+                                                    if self.gotIV {
+                                                            break encounter_loop;
+                                                    }
+                                                    self.deviceConfig.encounterPokemonUpper.toXCUICoordinate(app: self.app).tap()
+                                                    //Needed for flying pokemon
+                                                    usleep(300000)
+                                                    if self.gotIV {
+                                                            break encounter_loop;
+                                                    }
+                                                    self.deviceConfig.encounterPokemonUpperHigher.toXCUICoordinate(app: self.app).tap()
+                                            }
+                                            //////////// end skip ultra iv ////////
+                                            self.lock.lock()
+                                            if self.gotIV {
+                                                    self.gotIV = false
+                                                    Log.debug("IV Scan Successful for \(self.pokemonEncounterIdForEncounter!)")
+                                            }
+                                            self.lock.unlock()
+
+                                        } else {
+                                            var count = 0
+                                            var done = false
+                                            while count < 3 && !done {
+                                                ////// if ultra iv, skip //////
+                                                if !self.config.ultraIV {
+                                                    self.freeScreen()
+                                                    if count != 0 {
+                                                        self.app.swipeLeft()
+                                                    }
+                                                    self.deviceConfig.encounterPokemonLower.toXCUICoordinate(app: self.app).tap()
+                                                    usleep(300000)
+                                                    self.deviceConfig.encounterPokemonUpper.toXCUICoordinate(app: self.app).tap()
+                                                    usleep(300000)
+                                                    self.deviceConfig.encounterPokemonUpperHigher.toXCUICoordinate(app: self.app).tap()
+                                                    sleep(2 * self.config.delayMultiplier)
+                                                }
+                                                /////// end ultra iv skip ///////
+                                                done = self.prepareEncounter()
+                                                count += 1
+                                            }
+                                        }
+                                        
+                                    }
+                                    
+                                }
+                                
                             } else {
                                 Log.error("Unkown Action: \(action)")
                             }
+
                             if self.emptyGmoCount >= self.config.maxEmptyGMO {
                                 Log.error("Exceeded Emtpy GMO Count \(self.emptyGmoCount). Increase Max Empty Gmo or Check Accouunt Status.")
                                 self.emptyGmoCount = 0
                             // Reset Counter. kick error to logs/don't kill app    self.app.terminate()
                             }
+                            
                             if failedCount >= self.config.maxFailedCount {
                                 Log.error("Exceeded Failed Count  \(failedCount). Increase Max Failed Count or Check Accouunt Status.")
                                 failedCount = 0
-                            // Reset Counter. kick error to logs/don't kill app
+                            // Reset Counter. kick error to logs/don't kill app                                    self.app.terminate()
                             }
 
                         } else {
                             failedToGetJobCount = 0
                             if self.action == "scan_iv" {
-                                print("[STATUS] IV Queue Empty . . .")
+                                Log.debug("IV Queue Empty . . .")
                             } else {
                                 Log.debug("no job left (Got result: \(result!)")
                             }
@@ -1556,7 +1730,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         min: (red: 0.0, green: 0.0, blue: 0.0),
                         max: (red: 0.3, green: 0.5, blue: 0.5))
                     ) {
-                        Log.info("Clicking try another account on failed login screen")
+                        Log.info("Clicking \"try again\" on failed login screen")
                         deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
                         username = nil
                         isLoggedIn = false
@@ -1594,9 +1768,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         
         if out != zoomedOut {
 
-            self.lock.lock()
-            self.currentLocation = self.config.startupLocation
-            self.lock.unlock()
+           // self.lock.lock()
+          //  self.currentLocation = self.config.startupLocation
+          //  self.lock.unlock()
             
             sleep(2 * self.config.delayMultiplier)
             
@@ -1637,20 +1811,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             }
         }
         
-        if !self.server.isRunning {
-            self.server.route(HTTPMethod.GET, "loc", self.handleLocRequest)
-            self.server.route(HTTPMethod.GET, "data", self.handleDataRequest)
-            self.server.route(HTTPMethod.POST, "loc", self.handleLocRequest)
-            self.server.route(HTTPMethod.POST, "data", self.handleDataRequest)
-                        
-            do {
-                try self.server.start(port: Int(self.config.port))
-                
-                Log.info("\(self.server) running: \(self.server.isRunning) on port \(self.server.port) connection count \(self.server.httpConnectionCount)")
-            } catch {
-                Log.error("Failed to start server: \(error). Trying again...")
-            }
-        }
         while true {
             switch lastTestIndex {
             case 0:
