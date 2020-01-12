@@ -470,8 +470,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     Log.debug("Got ban. Restarting...")
                     app.launch()
                     sleep(10 * config.delayMultiplier)
-                    deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
-                    return
                 } else if (
                     screenshotComp.rgbAtLocation(
                         pos: deviceConfig.loginTerms,
@@ -1269,10 +1267,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 // _ = data["delay"] as? Double ?? 0
                                 let wait = 60
                                 Log.debug("Scanning for Quest at \(lat) \(lon)")
+                                ////// if ultra quest, skip /////////////
                                 if !self.config.ultraQuests {
                                     self.zoom(out: false, app: self.app, coordStartup: self.deviceConfig.startup.toXCUICoordinate(app: self.app))
                                 }
-                                ////// if ultra quest, skip /////////////
                                 if (!self.config.ultraQuests) {
                                     if currentItems >= self.config.itemFullCount && !self.newCreated {
                                         self.freeScreen()
@@ -1307,11 +1305,13 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     self.lock.lock()
                                     self.currentLocation = (lat, lon)
                                     self.lock.unlock()
+                                    self.encounterDistance = 10.0
                                 }
                                 self.lock.lock()
                                 self.waitRequiresPokemon = false
                                 self.pokemonEncounterId = nil
-                                self.targetMaxDistance = self.config.targetMaxDistance
+                                self.targetMaxDistance =
+                                self.config.targetMaxDistance
                                 self.waitForData = true
                                 self.lock.unlock()
                                 if (!self.config.ultraQuests) {
@@ -1321,7 +1321,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 Log.debug("Calculating Cooldown . . .")
                                 var cooldownTime = 15
                                 if self.questCount > 0 {
-                                    cooldownTime = Int(round(self.encounterDistance / 60))
+                                    cooldownTime = Int(round(self.encounterDistance / 80))
                                 }
                                 let delay = (wait + cooldownTime)
                                 

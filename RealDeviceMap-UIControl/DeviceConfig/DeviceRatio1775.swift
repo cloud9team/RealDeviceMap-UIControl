@@ -75,7 +75,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 118, scaler: scaler)
     }
     var compareWarningR: DeviceCoordinate {
-        return DeviceCoordinate(x: 586, y: 118, scaler: scaler)
+        return DeviceCoordinate(x: 530, y: 538, scaler: scaler)
     }
     var closeFailedLogin: DeviceCoordinate {
         return DeviceCoordinate(x: 315, y: 665, scaler: scaler)
@@ -98,13 +98,13 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 550, y: 900, scaler: scaler)
     }
     var logoutDragEnd: DeviceCoordinate {
-        return DeviceCoordinate(x: 550, y: 150, scaler: scaler)
+        return DeviceCoordinate(x: 550, y: 500, scaler: scaler)
     }
     var logoutConfirm: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 610, scaler: scaler)
     }
     var logoutCompareX: Int {
-        return scaler.scaleY(y: 425)
+        return scaler.scaleY(y: 388)
     }
 
     
