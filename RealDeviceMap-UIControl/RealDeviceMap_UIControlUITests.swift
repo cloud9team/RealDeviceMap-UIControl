@@ -470,6 +470,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     Log.debug("Got ban. Restarting...")
                     app.launch()
                     sleep(10 * config.delayMultiplier)
+                    deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
+                    return
                 } else if (
                     screenshotComp.rgbAtLocation(
                         pos: deviceConfig.loginTerms,
@@ -1292,14 +1294,20 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 }
                                 //////// end skip code for ultra quest /////////
                                 self.newCreated = false
-                                let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude:
-                                    self.currentLocation!.lon)
-                                
-                                self.lock.lock()
-                                self.currentLocation = (lat, lon)
-                                self.lock.unlock()
-                                let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
-                                self.encounterDistance = newLocation.distance(from: oldLocation)
+                                if self.questCount > 0 {
+                                    let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude:
+                                        self.currentLocation!.lon)
+                                    
+                                    self.lock.lock()
+                                    self.currentLocation = (lat, lon)
+                                    self.lock.unlock()
+                                    let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
+                                    self.encounterDistance = newLocation.distance(from: oldLocation)
+                                } else {
+                                    self.lock.lock()
+                                    self.currentLocation = (lat, lon)
+                                    self.lock.unlock()
+                                }
                                 self.lock.lock()
                                 self.waitRequiresPokemon = false
                                 self.pokemonEncounterId = nil
