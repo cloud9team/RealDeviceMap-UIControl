@@ -42,6 +42,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var waitForRaids = false
     var systemAlertMonitorToken: NSObjectProtocol? = nil
     var accountAvailable = true
+    var invalid = false
     var shouldExit: Bool {
         
         get {
@@ -235,12 +236,19 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         if shouldExit {
             return
         }
-        
+        var startCount = 0
         if username == nil && config.enableAccountManager {
+            guard startCount < 6 else {
+                print("[STATUS] Disabled - Failed to get account 5 times.")
+                app.terminate()
+                self.config.enabled = false
+                return
+            }
             if !self.accountAvailable {
                 self.lock.lock()
                 sleep(5 * config.delayMultiplier)
                 self.lock.unlock()
+                startCount += 1
                 self.accountAvailable = true
             }
             postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "get_account", "min_level": minLevel, "max_level": maxLevel], blocking: true) { (result) in
@@ -259,7 +267,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
                     Log.debug("account warned in db: \(self.firstWarningDate ?? Date())")
                 }
-                
+                startCount = 0
                 Log.info("Got account \(self.username ?? "null") from backend.")
             }
         }
@@ -348,7 +356,24 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             var loaded = false
             var count = 0
             while !loaded {
+                guard count < 61 else {
+                    Log.error("Login timed out. Restarting...")
+                    shouldExit = true
+                    return
+                }
                 let screenshotComp = XCUIScreen.main.screenshot()
+                if screenshotComp.rgbAtLocation(pos: deviceConfig.cornerTest, min: (red: 0.27, green: 0.68, blue: 0.49), max: (red: 0.30, green: 0.73, blue: 0.53)) {
+                    Log.startup("Possible Banned or Invalid Credentials")
+                    if screenshotComp.rgbAtLocation(pos: deviceConfig.logoutConfirm, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
+                        deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
+                        Log.debug("Attempting logout.")
+                        sleep(2)
+                        app.terminate()
+                        return
+                    } else {
+                        Log.debug("Could not find OK button.")
+                    }
+                }
                 if screenshotComp.rgbAtLocation(
                     pos: self.deviceConfig.startup,
                     min: (red: 0.0, green: 0.75, blue: 0.55),
@@ -364,14 +389,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     max: (1.00, 0.85, 0.1)) {
                     Log.debug("App Started in login screen.")
                     loaded = true
+                } else {
+                    count += 1
+                    sleep(2 * config.delayMultiplier)
                 }
-                count += 1
-                if count == 60 && !loaded {
-                    count = 0
-                    app.launch()
-                    sleep(1 * config.delayMultiplier)
-                }
-                sleep(1 * config.delayMultiplier)
+
             }
             
             let screenshotComp = XCUIScreen.main.screenshot()
@@ -454,13 +476,29 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             var count = 0
             
             while !loggedIn {
-                
+                guard count < 61 else {
+                    Log.error("Login timed out. Restarting...")
+                    shouldExit = true
+                    return
+                }
+                guard !self.invalid else {
+                    Log.debug("Log out...")
+                    deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
+                    sleep(2)
+                    postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_banned"], blocking: true) { (result) in }
+                    sleep(2)
+                    self.invalid = false
+                    username = nil
+                    shouldExit = true
+                    return
+                }
                 if app.state != .runningForeground {
                     app.launch()
                     sleep(10 * config.delayMultiplier)
                 }
                 
                 let screenshotComp = XCUIScreen.main.screenshot()
+                
                 
                 if (screenshotComp.rgbAtLocation(
                     pos: deviceConfig.loginBannedBackground,
@@ -470,6 +508,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     Log.debug("Got ban. Restarting...")
                     app.launch()
                     sleep(10 * config.delayMultiplier)
+                    self.invalid = true
                 } else if (
                     screenshotComp.rgbAtLocation(
                         pos: deviceConfig.loginTerms,
@@ -551,16 +590,14 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         max: (red: 0.05, green: 0.3, blue: 0.4))
                         ) {
                         Log.debug("Got ban. Restarting...")
+                        postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_banned"], blocking: true) { (result) in }
+                        username = nil
+                        shouldExit = true
                         app.launch()
                         sleep(10 * config.delayMultiplier)
                     }
                 } else {
                     count += 1
-                    if count == 60 {
-                        Log.error("Login timed out. Restarting...")
-                        shouldExit = true
-                        return
-                    }
                     sleep(2 * config.delayMultiplier)
                 }
                 
@@ -1112,16 +1149,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "get_job"], blocking: true) { (result) in
                         
                         if result == nil {
-                            if failedToGetJobCount == 10 {
+                            guard failedToGetJobCount < 11 else {
                                 Log.error("Failed to get a job 10 times in a row. Exiting...")
                                 self.shouldExit = true
                                 return
-                            } else {
-                                Log.error("Failed to get a job")
-                                failedToGetJobCount += 1
-                                sleep(5 * self.config.delayMultiplier)
-                                return
                             }
+                            Log.error("Failed to get a job")
+                            failedToGetJobCount += 1
+                            sleep(5 * self.config.delayMultiplier)
+                            return
                         } else if self.config.enableAccountManager == true, let data = result!["data"] as? [String: Any], let minLevel = data["min_level"] as? Int, let maxLevel = data["max_level"] as? Int {
                             self.minLevel = minLevel
                             self.maxLevel = maxLevel
@@ -1541,6 +1577,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     
                 }
             } else {
+                guard startupCount < 31 else {
+                    Log.info("App stuck in Startup. Restarting...")
+                    app.terminate()
+                    return
+                }
                 let screenshotComp = XCUIScreen.main.screenshot()
                 
                 if config.enableAccountManager && screenshotComp.rgbAtLocation(
@@ -1575,7 +1616,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     Log.info("App Started")
                     isStarted = true
                     sleep(1 * config.delayMultiplier)
-	            }else {
+	            } else {
 	                if screenshotComp.rgbAtLocation(
 	                pos: deviceConfig.closeFailedLogin,
 	                min: (0.40, 0.80, 0.60),
@@ -1584,12 +1625,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 	                deviceConfig.closeFailedLogin.toXCUICoordinate(app: app).tap()
 	                Log.info("Clicking Try another Account on Failed Login Popup")
 	                }
-
                     Log.debug("App still in Startup")
-                    if startupCount == 30 {
-                        Log.info("App stuck in Startup. Restarting...")
-                        app.terminate()
-                    }
                     startupCount += 1
                     sleep(1 * config.delayMultiplier)
                 }
