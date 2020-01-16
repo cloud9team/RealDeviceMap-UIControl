@@ -175,6 +175,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 
     
     func part0Setup() {
+        while self.invalid {
+            print("[STATUS] Disabled - Logged out and account manager set to false.")
+            sleep(45)
+            continue
+        }
         if !self.server.isRunning {
             Log.debug("Server not running. Returning to setup.")
             setUp()
@@ -944,7 +949,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 if !self.gotIV && encounters != 0 {
                     self.gotIV = true
                 }
-                if self.waitForRaids && forts != 0 {
+                if self.waitForRaids && (forts != 0 || (nearby + wild) > 0) {
                     self.waitForRaids = false
                     Log.debug("Raid - Forts Parsed: \(forts)")
                 }
@@ -1041,7 +1046,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                             firstWarningDate = Date()
                             self.postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_warning"], blocking: true) { (result) in }
 
-                            Log.info("Logging out...")
+                            Log.info("Account warned. Logging out...")
                             let success = self.logOut()
                             if success {
                                 self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
@@ -1089,11 +1094,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     isStartupCompleted = true
                     
                     if self.needsLogout {
+                        Log.error("Logout called after isStartupCompleted - if you see this please send me logs from this device.")
                         let success = self.logOut()
                         if !success {
                             return
                         }
-                        
                         self.needsLogout = false
                         self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "logged_out"], blocking: true) { (result) in }
                         self.username = nil
@@ -1197,14 +1202,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 let lat2 = String(format: "%.5f", lat)
                                 let lon2 = String(format: "%.5f", lon)
                                 Log.debug("Scanning for Raid at \(lat) \(lon)")
-                                let oldLocation = CLLocation(latitude: self.currentLocation!.lat, longitude:
-                                    self.currentLocation!.lon)
                                 
                                 self.lock.lock()
                                 self.currentLocation = (lat, lon)
                                 self.lock.unlock()
-                                let newLocation = CLLocation(latitude: self.currentLocation!.lat, longitude: self.currentLocation!.lon)
-                                self.encounterDistance = newLocation.distance(from: oldLocation)
+                                
                                 let start = Date()
                                 self.lock.lock()
                                 self.currentLocation = (lat, lon)
@@ -1213,7 +1215,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.waitForRaids = true
                                 self.lock.unlock()
                                 var locked = true
-                                Log.debug("distance: \(self.encounterDistance)")
                                 while locked {
                                     //let forts = data["forts"] as? Int ?? 0
                                     usleep(100000 * self.config.delayMultiplier)
@@ -1574,14 +1575,14 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     isStarted = true
                     sleep(1 * config.delayMultiplier)
 	            } else {
-	                if screenshotComp.rgbAtLocation(
-	                pos: deviceConfig.closeFailedLogin,
-	                min: (0.40, 0.80, 0.60),
-	                max: (0.50, 0.90, 0.65)) {
-	    			Log.info("Failed Login Screen Detected")
-	                deviceConfig.closeFailedLogin.toXCUICoordinate(app: app).tap()
-	                Log.info("Clicking Try another Account on Failed Login Popup")
-	                }
+                    if !self.config.enableAccountManager && screenshotComp.rgbAtLocation(
+                        pos: self.deviceConfig.startupLoggedOut,
+                        min: (0.95, 0.75, 0.0),
+                        max: (1.00, 0.85, 0.1)) {
+                        self.invalid = true
+                        app.terminate()
+                        return
+                    }
                     Log.debug("App still in Startup")
                     startupCount += 1
                     sleep(1 * config.delayMultiplier)
