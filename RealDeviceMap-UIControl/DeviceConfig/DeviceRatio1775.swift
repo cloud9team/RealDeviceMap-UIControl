@@ -98,7 +98,10 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 550, y: 900, scaler: scaler)
     }
     var logoutDragEnd: DeviceCoordinate {
-        return DeviceCoordinate(x: 550, y: 200, scaler: scaler)
+        return DeviceCoordinate(x: 550, y: 500, scaler: scaler)
+    }
+    var logoutDragEnd2: DeviceCoordinate {
+        return DeviceCoordinate(x: 550, y: 800, scaler: scaler)
     }
     var logoutConfirm: DeviceCoordinate {
         return DeviceCoordinate(x: 182, y: 568, scaler: scaler)

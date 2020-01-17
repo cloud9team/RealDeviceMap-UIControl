@@ -655,9 +655,9 @@ extension XCTestCase {
                 break
             }
          }
-         deviceConfig.logoutDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.logoutDragEnd.toXCUICoordinate(app: app))
-        sleep(2 * config.delayMultiplier)
-        if !found {
+        logoutLoop: while !found {
+            deviceConfig.logoutDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.logoutDragEnd2.toXCUICoordinate(app: app))
+            sleep(1 * config.delayMultiplier)
             let screenshot2 = XCUIScreen.main.screenshot()
             for y in 0...screenshot2.image.cgImage!.height / 10 {
                 if screenshot2.rgbAtLocation(
@@ -668,7 +668,7 @@ extension XCTestCase {
                     
                     normalized.withOffset(CGVector(dx: lround(Double(deviceConfig.logoutCompareX)*tapMultiplier), dy: lround(Double(y * 10)*tapMultiplier))).tap()
                     found = true
-                    break
+                    break logoutLoop
                 }
             }
         }

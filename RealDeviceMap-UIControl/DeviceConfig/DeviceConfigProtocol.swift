@@ -61,6 +61,8 @@ protocol DeviceConfigProtocol {
     var logoutDragStart: DeviceCoordinate { get }
     /** Coord to end drag at for clicking logout. */
     var logoutDragEnd: DeviceCoordinate { get }
+    /** Coord to end drag at for clicking logout. */
+    var logoutDragEnd2: DeviceCoordinate { get }
     /** Button to confirm logout. */
     var logoutConfirm: DeviceCoordinate { get }
     /** X value to search green boarder of logout button at from top to bottom */

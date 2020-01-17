@@ -176,8 +176,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     
     func part0Setup() {
         while self.invalid {
-            print("[STATUS] Disabled - Logged out and account manager set to false.")
-            sleep(45)
+            if !self.accountAvailable {
+                print("[STATUS] Disabled - Logged out and no accounts available.")
+            } else {
+                print("[STATUS] Disabled - Logged out and account manager set to false.")
+            }
+            sleep(60)
             continue
         }
         if !self.server.isRunning {
@@ -239,27 +243,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         if shouldExit {
             return
         }
-        var startCount = 0
+        //var startCount = 0
         if username == nil && config.enableAccountManager {
-            guard startCount < 6 else {
-                print("[STATUS] Disabled - Failed to get account 5 times.")
-                app.terminate()
-                self.config.enabled = false
-                return
-            }
-            if !self.accountAvailable {
-                self.lock.lock()
-                sleep(5 * config.delayMultiplier)
-                self.lock.unlock()
-                startCount += 1
-                self.accountAvailable = true
-            }
             postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "get_account", "min_level": minLevel, "max_level": maxLevel], blocking: true) { (result) in
                 guard let data = result!["data"] as? [String: Any] else {
-                        Log.error("Failed to get account.")
-                        self.accountAvailable = false
-                     //   self.shouldExit = true
-                        return
+                    Log.error("Failed to get account.")
+                    self.accountAvailable = false
+                    self.invalid = true
+                    
+                    return
                 }
                 self.username = data["username"] as? String
                 self.password = data["password"] as? String
@@ -270,7 +262,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
                     Log.debug("account warned in db: \(self.firstWarningDate ?? Date())")
                 }
-                startCount = 0
+                
                 Log.info("Got account \(self.username ?? "null") from backend.")
             }
         }
@@ -485,7 +477,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     return
                 }
                 guard !self.invalid else {
-                    Log.debug("Log out...")
+                    Log.debug("Log out...1")
                     deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
                     sleep(2)
                     postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_banned"], blocking: true) { (result) in }

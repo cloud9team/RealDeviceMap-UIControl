@@ -240,6 +240,10 @@ class BuildController {
                             self.buildingCount -= 1
                             self.buildLock.unlock()
                         }
+                        if string!.contains(string: "[STATUS] Disabled") && string!.contains(string: "Logged out and") {
+                            let statusUpdate = statusUpdate.replacingOccurrences(of: "[STATUS] ", with: "")
+                            self.setStatus(uuid: device.uuid, dateStarted: timestamp, status: statusUpdate)
+                        }
                         if string!.contains(string: "[STATUS] Startup") {
                             self.setStatus(uuid: device.uuid, dateStarted: timestamp, status: "Running: Startup")
                         }
