@@ -636,6 +636,12 @@ extension XCTestCase {
         {
             tapMultiplier = 1.0
         }
+        self.freeScreen()
+        if checkHasWarning() {
+            Log.debug("Closing warning screen.")
+            deviceConfig.closeWarning.toXCUICoordinate(app: app).tap()
+            sleep(1 * config.delayMultiplier)
+        }
         let normalized = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
         var found = false
         deviceConfig.closeMenu.toXCUICoordinate(app: app).tap()
@@ -655,7 +661,12 @@ extension XCTestCase {
                 break
             }
          }
+        var scrollCount = 0
         logoutLoop: while !found {
+            if scrollCount == 6 {
+                Log.debug("Can't find logout/ Restarting...")
+                app.activate()
+            }
             deviceConfig.logoutDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.logoutDragEnd2.toXCUICoordinate(app: app))
             sleep(1 * config.delayMultiplier)
             let screenshot2 = XCUIScreen.main.screenshot()
@@ -671,6 +682,7 @@ extension XCTestCase {
                     break logoutLoop
                 }
             }
+            scrollCount += 1
         }
         sleep(2 * config.delayMultiplier)
         deviceConfig.logoutConfirm.toXCUICoordinate(app: app).tap()

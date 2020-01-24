@@ -43,6 +43,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var systemAlertMonitorToken: NSObjectProtocol? = nil
     var accountAvailable = true
     var invalid = false
+    var processFailedCount = 0
     var shouldExit: Bool {
         
         get {
@@ -176,12 +177,17 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     
     func part0Setup() {
         while self.invalid {
+            guard self.processFailedCount != 10 else {
+                self.accountAvailable = true
+                self.processFailedCount = 0
+                return
+            }
+            let tryAgain = (10 - self.processFailedCount)
             if !self.accountAvailable {
-                print("[STATUS] Disabled - Logged out and no accounts available.")
-            } else {
-                print("[STATUS] Disabled - Logged out and account manager set to false.")
+                print("[STATUS] Disabled - Logged out/no account available. Retrying in \(tryAgain)")
             }
             sleep(60)
+            self.processFailedCount += 1
             continue
         }
         if !self.server.isRunning {
@@ -248,11 +254,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "get_account", "min_level": minLevel, "max_level": maxLevel], blocking: true) { (result) in
                 guard let data = result!["data"] as? [String: Any] else {
                     Log.error("Failed to get account.")
-                    self.accountAvailable = false
-                    self.invalid = true
-                    
+                    self.processFailedCount += 1
+                    if self.processFailedCount == 15 {
+                        self.processFailedCount = 0
+                        self.accountAvailable = false
+                        self.invalid = true
+                    }
                     return
                 }
+                self.processFailedCount = 0
                 self.username = data["username"] as? String
                 self.password = data["password"] as? String
                 self.newLogIn = true
@@ -327,12 +337,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             if allowWhileUsingButton.exists {
                 allowWhileUsingButton.tap()
             }
-
+            
             return true
         }
-
-        app.tap()        
-
+        
+        app.tap()
     }
     
     func part1LoginSetup() {
@@ -340,8 +349,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
        // self.currentLocation = self.config.startupLocation
        // self.lock.unlock()
        // Log.debug("Set startup location to \(self.currentLocation ?? nil)")
-
-        if shouldExit || !config.enableAccountManager {
+        if !config.enableAccountManager {
+            lastTestIndex = 7
+            return
+        }
+        if shouldExit {
             return
         }
         if username != nil && !isLoggedIn {
@@ -390,7 +402,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 }
 
             }
-            
+            // only on fresh install
             let screenshotComp = XCUIScreen.main.screenshot()
             if screenshotComp.rgbAtLocation(
                 pos: self.deviceConfig.ageVerification,
@@ -412,7 +424,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 deviceConfig.ageVerification.toXCUICoordinate(app: app).tap()
                 sleep(1 * config.delayMultiplier)
             }
-
+            //startup logged out/tap new player-ptc
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginNewPlayer.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
@@ -924,6 +936,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 Log.debug("Got Data without Pokemon")
                             }
                         } else {
+                            //add somethng here
                             Log.debug("Data")
                             self.waitForData = false
                         }
@@ -1023,7 +1036,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     Log.debug("Performing Startup sequence")
                    // currentLocation = config.startupLocation
                     if !self.isLoggedIn {
-                        isStartup()
+                        if isStartup() {
+                            isLoggedIn = true
+                        }
+                        
                     }
                     sleep(2 * config.delayMultiplier)
                     
@@ -1436,17 +1452,20 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                              ///////////////// end ultra quest skip ////////
                             } else if action == "switch_account" {
 //////--------Switch account----------////////////////////
-                                let success = self.logOut()
-                                if !success {
-                                    self.needsLogout = true
+                                if self.config.enableAccountManager {
+                                    let success = self.logOut()
+                                    if !success {
+                                        self.needsLogout = true
+                                        return
+                                    }
+                                    
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
+                                    self.username = nil
+                                    self.isLoggedIn = false
+                                    UserDefaults.standard.synchronize()
+                                    self.shouldExit = true
                                     return
                                 }
-                                
-                                self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
-                                self.username = nil
-                                self.isLoggedIn = false
-                                UserDefaults.standard.synchronize()
-                                self.shouldExit = true
                                 return
                             } else if action == "scan_iv" {
 ////---------- Scan IV ---------------------////////////
