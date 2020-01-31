@@ -45,13 +45,13 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 222, y: 815, scaler: scaler)
     }
     var ageVerificationYear : DeviceCoordinate {
-        return DeviceCoordinate(x: 475, y: 690, scaler: scaler)
+        return DeviceCoordinate(x: 474, y: 680, scaler: scaler)
     }
     var ageVerificationDragStart : DeviceCoordinate {
-        return DeviceCoordinate(x: 475, y: 1025, scaler: scaler)
+        return DeviceCoordinate(x: 460, y: 950, scaler: scaler)
     }
     var ageVerificationDragEnd : DeviceCoordinate {
-        return DeviceCoordinate(x: 475, y: 380, scaler: scaler)
+        return DeviceCoordinate(x: 460, y: 370, scaler: scaler)
     }
     var passenger: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 775, scaler: scaler)

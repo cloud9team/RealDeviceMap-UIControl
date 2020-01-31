@@ -416,7 +416,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(1 * config.delayMultiplier)
                 //Slide
                 deviceConfig.ageVerificationDragStart.toXCUICoordinate(app: app).press(forDuration: 0.1, thenDragTo: deviceConfig.ageVerificationDragEnd.toXCUICoordinate(app: app))
-                sleep(1 * config.delayMultiplier)
+                sleep(2 * config.delayMultiplier)
                 //Tap to select
                 deviceConfig.ageVerificationDragStart.toXCUICoordinate(app: app).tap()
                 sleep(1 * config.delayMultiplier)
@@ -1451,8 +1451,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 }
                              ///////////////// end ultra quest skip ////////
                             } else if action == "switch_account" {
-//////--------Switch account----------////////////////////
-                                if self.config.enableAccountManager {
+//////--------Switch account----------///////////////////
                                     let success = self.logOut()
                                     if !success {
                                         self.needsLogout = true
@@ -1465,8 +1464,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                     UserDefaults.standard.synchronize()
                                     self.shouldExit = true
                                     return
-                                }
-                                return
                             } else if action == "scan_iv" {
 ////---------- Scan IV ---------------------////////////
                                 guard self.noEncounterCount <= self.config.maxNoEncounterCount else {
@@ -1581,7 +1578,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         sleep(7 * config.delayMultiplier)
                         shouldExit = true
                         return
-                } else if isStartup() {
+                } else if isStartup(click: 1) {
                     Log.info("App Started")
                     isStarted = true
                     sleep(1 * config.delayMultiplier)

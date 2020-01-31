@@ -157,8 +157,8 @@ extension XCTestCase {
         }
         
     } 
-    func isStartup(screenshot: XCUIScreenshot?=nil) -> Bool {
-        
+    func isStartup(click: Int = 0, screenshot: XCUIScreenshot?=nil) -> Bool {
+        let tap = click
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
         if self.config.verbose {
             Log.debug("cornerTest location check at \(deviceConfig.cornerTest.x),\(deviceConfig.cornerTest.y) color range allowed(R:.27-.3 G:.68-.73 B:.49-.53)")
@@ -172,13 +172,17 @@ extension XCTestCase {
                 Log.debug("rgbA (cautionButton) result: \(screenshotComp.rgbAtLocation(pos: deviceConfig.cautionButton))")
             }
             if screenshotComp.rgbAtLocation(pos: deviceConfig.cautionButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
+                if tap == 1 {
                     deviceConfig.cautionButton.toXCUICoordinate(app: app).tap()
-                Log.debug("Cleared Caution warning.")
+                    Log.debug("Cleared Caution warning.")
+                }
                 return true
             } else if screenshotComp.rgbAtLocation(pos: deviceConfig.twothreelineButton, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
+                if tap == 1 {
                     deviceConfig.twothreelineButton.toXCUICoordinate(app: app).tap()
                     Log.debug("Cleared two-three line warning.")
-                    return true
+                }
+                return true
             } else {
                     Log.debug("Could not find OK button.")
             }
