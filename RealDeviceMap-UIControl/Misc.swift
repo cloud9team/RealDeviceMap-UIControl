@@ -177,7 +177,7 @@ extension XCTestCase {
 
     }
 
-    func screenCheck(status:Bool = false, startupScreen:String = "unknown") -> (status: Bool, startupScreen: String) {
+    func screenCheck(status: Bool = false, startupScreen: String = "unknown") -> (status: Bool, startupScreen: String) {
 
         let screenshotComp = XCUIScreen.main.screenshot()
         let status = false
@@ -281,7 +281,7 @@ extension XCTestCase {
         }
         return (status, startupScreen)
     }
-    
+
     func setState(screen: String) -> Int {
         var stage = 0
         switch screen {
@@ -296,11 +296,10 @@ extension XCTestCase {
         default:
             stage = 0
         }
-        return stage
-        
+        return stage   
     }
-    
-    func loginError(error:Bool = false, authError:Int = 0) -> (error: Bool, authError: Int) {
+
+    func loginError(error: Bool = false, authError: Int = 0) -> (error: Bool, authError: Int) {
         Log.debug("Checking for unable to authenticate...")
         let screenshotComp = XCUIScreen.main.screenshot()
         if screenshotComp.rgbAtLocation(
@@ -351,9 +350,8 @@ extension XCTestCase {
         }
         return (error, authError)
     }
-    
+
     func checkWeather(screenshot: XCUIScreenshot?=nil) -> Bool {
-       
         Log.debug("Checking Weather condition...")
         let screenshotComp = screenshot ?? getScreenshot()
         if screenshotComp.rgbAtLocation(
@@ -369,8 +367,8 @@ extension XCTestCase {
         }
         return false
     }
-    
-    func isTutorial(tutorial:Bool = false, step:Int = 0) -> (tutorial: Bool, step: Int) {
+
+    func isTutorial(tutorial: Bool = false, step: Int = 0) -> (tutorial: Bool, step: Int) {
         
         let screenshotComp = XCUIScreen.main.screenshot()
         let tutorial = false
