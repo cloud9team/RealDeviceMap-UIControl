@@ -13,7 +13,8 @@ protocol DeviceConfigProtocol {
 
     /** Green pixel in green button of startup popup. */
     var startup: DeviceCoordinate { get }
-
+    /* pixel 2,2 on every device. Color is irrelevant - used to check startup condition */
+    var cornerCheck: DeviceCoordinate { get }
     // Handling Multiple startup prompts
     /* White Pixel (on 3 line prompt) or Greenish-Blue Pixel (on 2 line prompt) bottom right corner of 2line popup */
     var startupOldCornerTest: DeviceCoordinate { get }
@@ -159,6 +160,10 @@ protocol DeviceConfigProtocol {
     var loginPasswordTextfield: DeviceCoordinate { get }
     /** Login button */
     var loginConfirm: DeviceCoordinate { get }
+    /** Top center white inside box "Account locked for 15 minutes" */
+    var loginAccountTimeout: DeviceCoordinate { get }
+    /** Green pixel left side of button towards edge*/
+    var loginAccountTimeoutButton: DeviceCoordinate { get }
     /** ? pixel in background of suspension notice */
     var loginBannedBackground: DeviceCoordinate { get }
     /** Green pixel in "TRY A DIFFERENT ACCOUNT" button of "Failed to login" popup*/
@@ -214,9 +219,9 @@ protocol DeviceConfigProtocol {
     /** Confirm username button. */
     var tutorialUsernameConfirm: DeviceCoordinate { get }
     /** Green On Willow */
-    var tutorialProfessorCheck: DeviceCoordinate { get }
-    /** Name Says It All **/
-
+    var tutorialProfessorCheeck: DeviceCoordinate { get }
+    /** bright blue in pokestop icon on willow tutorial end screen */
+    var willowPokestop: DeviceCoordinate { get }
     /** Back Button in Bottom Left of Avatar Setup **/
     var tutorialBack: DeviceCoordinate { get }
     /** Center of the Item Menu in Avatar Customization **/

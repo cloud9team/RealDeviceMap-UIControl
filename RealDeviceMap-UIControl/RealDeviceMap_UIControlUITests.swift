@@ -40,6 +40,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     var encounterDelay = 1.0
     var server = Server()
     var hasWarning = false
+    var startScan = false
+    var screen: String?
 
     var level: Int = 0
     var systemAlertMonitorToken: NSObjectProtocol?
@@ -178,6 +180,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 
         shouldExit = false
         newCreated = false
+        startScan = false
 
         if let systemAlertMonitorToken = self.systemAlertMonitorToken {
             Log.info("Unregistered UI Interruption Monitor")
@@ -186,7 +189,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
 
         app.terminate()
-
+        
         // Wake up device if screen is off (recently rebooted), then press home to get to home screen.
         Log.info("Waking up the device")
         XCUIDevice.shared.press(.home)
@@ -224,8 +227,8 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             if let firstWarningTimestamp = data!["first_warning_timestamp"] as? Int {
                 self.firstWarningDate = Date(timeIntervalSince1970: Double(firstWarningTimestamp))
             }
-            Log.info("Connected to Backend sucesfully")
-
+            Log.info("Connected to Backend successfully")
+            
         }
 
         if shouldExit {
@@ -298,7 +301,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             if alwaysButton.exists {
                 alwaysButton.tap()
             }
-
+            
             let laterButton = alert.buttons["Later"]
             if laterButton.exists {
                 laterButton.tap()
@@ -308,7 +311,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             if remindmelaterButton.exists {
                 remindmelaterButton.tap()
             }
-
+            
             let closeButton = alert.buttons["Close"]
             if closeButton.exists {
                 closeButton.tap()
@@ -321,14 +324,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 
             return true
         }
-
+        
         app.tap()
-
+        
     }
 
     func part1LoginSetup() {
+        
+        if shouldExit || !config.enableAccountManager { //< pretty sure this also cant happen. Coming from 0, setup is always false here
 
-        if shouldExit || !config.enableAccountManager {
             return
         }
 
@@ -339,61 +343,55 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             var loaded = false
             var count = 0
             while !loaded {
+                guard count < 60 else {
+                    count = 0
+                    app.terminate()
+                    sleep(1 * config.delayMultiplier)
+                    return
+                }
+                // unable to authenticate or failed login
+                let playerLogin = loginError()
+                Log.debug("Login error check 1")
+                guard !playerLogin.error else {
+                    if playerLogin.authError == 2 {
+                        Log.error("Account \(username!) failed to log in. Getting a new account")
+                        postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_invalid_credentials"], blocking: true) { (result) in }
+                    
+                        username = nil
+                    }
+                    isLoggedIn = false
+                    shouldExit = true
+                    return
+                }
+                // first find out if we are logged in, banned, or need to login
+                
+                let gameState = screenCheck()
+                Log.debug("screenCheck part1LoginSetup-->")
+                if gameState.status {
+                    self.screen = gameState.startupScreen
+                    let stage = setState(screen: gameState.startupScreen)
+                    if stage != 0 {
+                        loaded = true
+                        isLoggedIn = true
+                        lastTestIndex = stage
+                        return
+                    }
+                }
                 let screenshotComp = getScreenshot()
                 if screenshotComp.rgbAtLocation(
-                    pos: self.deviceConfig.startup,
-                    min: (red: 0.0, green: 0.75, blue: 0.55),
-                    max: (red: 1.0, green: 0.90, blue: 0.70)) {
-                    Log.info("Tried to log in but already logged in.")
-                    needsLogout = true
-                    isLoggedIn = true
-                    newLogIn = false
-                    return
-                } else if screenshotComp.rgbAtLocation(
                     pos: self.deviceConfig.startupLoggedOut,
                     min: (0.95, 0.75, 0.0),
                     max: (1.00, 0.85, 0.1)) {
-                    Log.debug("App Started in login screen.")
+                    Log.debug("App Started in login screen...")
                     loaded = true
-                } else if acceptTOS() {
-                    Log.debug("Accepting Terms")
-                    deviceConfig.loginTerms.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if acceptTOSUpdate() {
-                    Log.debug("Accepting Updated Terms.")
-                    deviceConfig.loginTerms2.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if acceptPrivacy() {
-                    Log.debug("Accepting Privacy.")
-                    deviceConfig.loginPrivacy.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if acceptPrivacyUpdate() {
-                    Log.debug("Accepting Privacy Update.")
-                    deviceConfig.loginPrivacyUpdate.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if unableAuth() {
-                    Log.debug("Unable to authenticate.")
-                    deviceConfig.unableAuthButton.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                    shouldExit = true
-                    return
-                } else if failedLogin() {
-                    Log.error("Account \(username!) failed to log in. Getting a new account")
-                    deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                    username = nil
-                    shouldExit = true
-                    return
                 }
+                
+                sleep(1)
                 count += 1
-                if count == 60 && !loaded {
-                    count = 0
-                    app.launch()
-                    sleep(1 * config.delayMultiplier)
-                }
                 sleep(1 * config.delayMultiplier)
             }
 
+            /* Age verification only hits with fresh install of app. */
             let screenshotComp = getScreenshot()
             if screenshotComp.rgbAtLocation(
                 pos: self.deviceConfig.ageVerification,
@@ -418,7 +416,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 deviceConfig.ageVerification.toXCUICoordinate(app: app).tap()
                 sleep(1 * config.delayMultiplier)
             }
-
+            // tap login, ptc
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginNewPlayer.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
@@ -475,15 +473,31 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             var count = 0
 
             while !loggedIn {
-
                 if app.state != .runningForeground {
                     app.launch()
                     sleep(10 * config.delayMultiplier)
                 }
-
+                
+                guard count < 60 else {
+                    Log.error("Login timed out. Restarting...")
+                    shouldExit = true
+                    return
+                }
                 let screenshotComp = getScreenshot()
-
-                if screenshotComp.rgbAtLocation(
+                let playerLogin = loginError()
+                Log.debug("loginError Check 2")
+                guard !playerLogin.error else {
+                    if playerLogin.authError == 2 {
+                        Log.error("Account \(username!) failed to log in. Getting a new account")
+                        postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_invalid_credentials"], blocking: true) { (result) in }
+                        username = nil
+                    }
+                    isLoggedIn = false
+                    shouldExit = true
+                    return
+                }
+                self.screenCheck()
+                if (screenshotComp.rgbAtLocation(
                     pos: deviceConfig.loginBannedBackground,
                     min: (red: 0.0, green: 0.2, blue: 0.3),
                     max: (red: 0.05, green: 0.3, blue: 0.4)
@@ -495,87 +509,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 blocking: true) { (_) in }
                     app.launch()
                     sleep(10 * config.delayMultiplier)
-                } else if acceptTOS() {
-                    Log.debug("Accepting Terms")
-                    deviceConfig.loginTerms.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                    var updatedScreenshot = XCUIScreen.main.screenshot()
-                    var count = 0
-                    while updatedScreenshot.rgbAtLocation(
-                        pos: deviceConfig.loginTerms,
-                        min: (red: 0.0, green: 0.75, blue: 0.55),
-                        max: (red: 1.0, green: 0.90, blue: 0.70)) &&
-                        updatedScreenshot.rgbAtLocation(
-                            pos: deviceConfig.loginTermsText,
-                            min: (red: 0.00, green: 0.00, blue: 0.00),
-                            max: (red: 0.30, green: 0.50, blue: 0.50)
-                        ) {
-                            if count > 5 {
-                                Log.error("Failed to accept terms. Restarting...")
-                                shouldExit = true
-                                return
-                            }
-                            Log.debug("Still found terms screen, tapping again")
-                            deviceConfig.loginTerms.toXCUICoordinate(app: app).tap()
-                            sleep(2 * config.delayMultiplier)
-                            updatedScreenshot = XCUIScreen.main.screenshot()
-                            count += 1
-                    }
-                } else if acceptTOSUpdate() {
-                    Log.debug("Accepting Updated Terms.")
-                    deviceConfig.loginTerms2.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if acceptPrivacy() {
-                    Log.debug("Accepting Privacy.")
-                    deviceConfig.loginPrivacy.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if acceptPrivacyUpdate() {
-                    Log.debug("Accepting Privacy Update.")
-                    deviceConfig.loginPrivacyUpdate.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if unableAuth() {
-                    Log.debug("Unable to authenticate.")
-                    deviceConfig.unableAuthButton.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                    shouldExit = true
-                    return
-                } else if failedLogin() {
-                    Log.error("Account \(username!) failed to log in. Getting a new account")
-                    deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                    username = nil
-                    shouldExit = true
-                    return
-                } else if
-                    screenshotComp.rgbAtLocation(
-                        pos: deviceConfig.loginFailed,
-                        min: (red: 0.40, green: 0.78, blue: 0.56),
-                        max: (red: 0.50, green: 0.88, blue: 0.66)) &&
-                        screenshotComp.rgbAtLocation(
-                        pos: deviceConfig.loginFailedText,
-                        min: (red: 0.23, green: 0.37, blue: 0.38),
-                        max: (red: 0.33, green: 0.47, blue: 0.48)
-                ) {
-                    Log.error("Invalid credentials for \(username!)")
-                    username = nil
-                    isLoggedIn = false
-                    postRequest(url: backendControlerURL,
-                                data: ["uuid": config.uuid, "username": self.username as Any,
-                                       "type": "account_invalid_credentials"],
-                                blocking: true) { (_) in }
-                    shouldExit = true
-                    return
-                } else if isStartup() || isTutorial() {
+                } else if ( isStartup() || isTutorial().tutorial) {
                     loggedIn = true
                     isLoggedIn = true
-                    Log.info("Logged in as \(username!)")
-                } else {
-                    count += 1
-                    if count == 60 {
-                        Log.error("Login timed out. Restarting...")
-                        shouldExit = true
-                        return
-                    }
+                    Log.info("Logged in as \(username!) --on part4LoginEnd")
+                } else {                     
                     sleep(2 * config.delayMultiplier)
                 }
 
@@ -596,33 +534,41 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 
             sleep(4 * config.delayMultiplier)
 
-            if !isTutorial() {
-                Log.info("Tutorial already done. Restarting...")
-                self.postRequest(
-                    url: self.backendControlerURL,
-                    data: ["uuid": self.config.uuid, "username": self.username as Any,
-                           "type": "tutorial_done"],
-                    blocking: true) { (_) in }
+            // these only do anything on new tutorial. not returning/incomplete tutroial
+            if checkWeather() {
+                Log.info("Cleared Extreme Weather...")
+            }
+            Log.info("screenCheck part5TutorialStart-->")
+            screenCheck()
+            let tutCheck = isTutorial()
+            if !tutCheck.tutorial {
+                Log.info("Account  \(username!) already completed tutorial...")
+                self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "tutorial_done"], blocking: true) { (result) in }
+                //isStartupCompleted = true
+                self.startScan = true
+                isLoggedIn = true
                 newCreated = true
                 newLogIn = false
-                app.launch()
-                sleep(1 * config.delayMultiplier)
-
+                lastTestIndex = 7
                 return
             }
-
+			if tutCheck.step == 2 {
+                Log.tutorial("Solving incomplete Tutorial for \(username!)")
+                lastTestIndex = 6
+                newLogIn = true
+                return
+            }
             let normalized = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
-
-            Log.tutorial("Solving Tutorial for \(username!)")
-
-            /* Start Reworked Changes Here */
+            
+            Log.tutorial("Solving New Tutorial for \(username!)")
+            
             /* 9 clicks to get through initial Willow Speech */
             for _ in 1...9 {
                 deviceConfig.tutorialNext.toXCUICoordinate(app: app).tap()
                 usleep(UInt32(1500000 * config.delayMultiplier))
             }
             sleep(2 * config.delayMultiplier)
-            var gender: Bool = tutorialGenderSelection()
+            let gender = tutorialGenderSelection()
             tutorialPhysicalFeature()
             tutorialStyleSelection(gender)
             Log.tutorial("Begin Willow Encounter Speech")
@@ -684,13 +630,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 
                 captured = true
                 } else {
-                    captureAttempts += 1
-                    if captureAttempts > 3 {
-                        Log.tutorial("ERROR 26 is the devil")
-                        postRequest(url: backendControlerURL,
-                                    data: ["uuid": config.uuid, "username": self.username as Any,
-                                           "type": "account_warning"],
-                                    blocking: true) { (_) in }
+                    CaptureAttempts += 1
+                    if CaptureAttempts > 3 {
+                        Log.tutorial("It appears you did not catch that pokemon (formerly known as error 26). Restarting...")
+                        postRequest(url: backendControlerURL, data: ["uuid": config.uuid, 
+                            "username": self.username as Any, 
+                            "type": "account_warning"], blocking: true) { (result) in } //<--this is not a good way to mark failed tutorials
                         app.terminate()
 
                     }
@@ -725,7 +670,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
 
         if newLogIn {
-
             sleep(2 * config.delayMultiplier)
             deviceConfig.tutorialKeybordDone.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
@@ -733,17 +677,18 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             sleep(5 * config.delayMultiplier)
             deviceConfig.tutorialUsernameConfirm.toXCUICoordinate(app: app).tap()
             sleep(5 * config.delayMultiplier)
-
-            var completed = false
-
-            while !completed {
-
+        }
+        // self.screen condition indicates previoulsy failed tut
+        if newLogIn || self.screen == "willow_pokestop" {
+            var Completed = false
+            
+            while !Completed {
                 let screenshotComp = getScreenshot()
 
                 if screenshotComp.rgbAtLocation(
-                pos: deviceConfig.tutorialProfessorCheck,
-                min: (red: 0.85, green: 0.95, blue: 0.00),
-                max: (red: 0.92, green: 1.00, blue: 0.05)) {
+                pos: deviceConfig.tutorialProfessorCheeck,
+                min: (red: 0.9, green: 0.75, blue: 0.65),
+                max: (red: 1.0, green: 0.85, blue: 0.75)) {
                     Log.tutorial("Tapping Willow on Pokestop Introduction")
                     deviceConfig.tutorialNext.toXCUICoordinate(app: app).tap()
                     sleep(2 * config.delayMultiplier)
@@ -959,7 +904,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 toPrint = "[DEBUG] Got Data without Pokemon"
                             }
                         } else {
-                            toPrint = "[DEBUG] Got Data"
+                            toPrint = "[DEBUG] Got Data ."
                             self.waitForData = false
                         }
                     } else if onlyEmptyGmos {
@@ -1008,8 +953,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         defer {
             dispatchQueueRunning = false
         }
-
-        // Time to start the actuall work
+        // Time to start the actual work
         runLoop()
 
     }
@@ -1019,9 +963,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         if shouldExit {
             return
         }
-
-        isStarted = false
-
+        if !self.startScan {
+            isStarted = false
+        }
         // State vars
         var startupCount = 0
         var isStartupCompleted = false
@@ -1040,7 +984,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         print("[STATUS] Startup")
 
         while !shouldExit {
-
+            guard startupCount < 30 else {
+                Log.info("App stuck in Startup. Restarting...")
+                app.terminate()
+                return
+            }
             if app.state != .runningForeground {
                 startupCount = 0
                 emptyGmoCount = 0
@@ -1048,7 +996,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 noQuestCount = 0
                 failedCount = 0
                 isStarted = false
-                isStartupCompleted = false
                 app.launch()
                 while app.state != .runningForeground {
                     sleep(1)
@@ -1063,7 +1010,15 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 if !isStartupCompleted {
                     Log.debug("Performing Startup sequence")
                     currentLocation = config.startupLocation
-                    isStartup()
+                    Log.debug("screenCheck part8main.runloop-->")
+                    let clearToS = screenCheck()
+                    if !clearToS.status {
+                        Log.debug("No ToS/Privacy screens detected.")
+                    }
+                    Log.debug("Running startup check 1-->")
+                    if isStartup() {
+                        isStartupCompleted = true
+                    }
                     sleep(2 * config.delayMultiplier)
 
                     deviceConfig.closeNews.toXCUICoordinate(app: app).tap()
@@ -1081,28 +1036,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         deviceConfig.closeWarning.toXCUICoordinate(app: app).tap()
                         sleep(1 * config.delayMultiplier)
                     }
-
-                    if self.acceptTOS() {
-                        Log.debug("Accepting Terms")
-                        deviceConfig.loginTerms.toXCUICoordinate(app: app).tap()
-                        sleep(2 * config.delayMultiplier)
-                    }
-                    if self.acceptTOSUpdate() {
-                        Log.debug("Accepting Updated Terms.")
-                        deviceConfig.loginTerms2.toXCUICoordinate(app: app).tap()
-                        sleep(2 * config.delayMultiplier)
-                    }
-                    if self.acceptPrivacy() {
-                        Log.debug("Accepting Privacy.")
-                        deviceConfig.loginPrivacy.toXCUICoordinate(app: app).tap()
-                        sleep(2 * config.delayMultiplier)
-                    }
-                    if self.acceptPrivacyUpdate() {
-                        Log.debug("Accepting Privacy Update.")
-                        deviceConfig.loginPrivacyUpdate.toXCUICoordinate(app: app).tap()
-                        sleep(2 * config.delayMultiplier)
-                    }
-
                     self.freeScreen()
                     deviceConfig.closeNews.toXCUICoordinate(app: app).tap()
                     sleep(1 * config.delayMultiplier)
@@ -1424,12 +1357,13 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 self.gotQuest = false
                                 self.lock.unlock()
                                 Log.debug("Scanning prepared")
-                                self.freeScreen()
 
+                                if !self.config.ultraQuests {
+                                    self.freeScreen()
+                                    self.app.swipeLeft()
+                                }
                                 let start = Date()
-
-                                self.app.swipeLeft()
-
+                                
                                 var success = false
                                 var locked = true
                                 var found = false
@@ -1534,23 +1468,20 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 }
 
                             } else if action == "switch_account" {
-                                self.lock.lock()
-                                self.currentLocation = self.config.startupLocation
-                                self.lock.unlock()
-                                let success = self.logOut()
-                                if !success {
-                                    self.needsLogout = true
-                                    return
-                                }
-
-                                self.postRequest(
-                                    url: self.backendControlerURL,
-                                    data: ["uuid": self.config.uuid, "type": "logged_out"],
-                                    blocking: true) { (_) in }
-                                self.username = nil
-                                self.isLoggedIn = false
-                                UserDefaults.standard.synchronize()
-                                self.shouldExit = true
+                                // !!!! need to do something here to handle GPR when account manager == false!
+                                    self.lock.lock()
+                                    self.currentLocation = self.config.startupLocation
+                                    self.lock.unlock()
+                                    let success = self.logOut()
+                                    if !success {
+                                        self.needsLogout = true
+                                        return
+                                    }
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "logged_out"], blocking: true) { (result) in }
+                                    self.username = nil
+                                    self.isLoggedIn = false
+                                    UserDefaults.standard.synchronize()
+                                    self.shouldExit = true
                                 return
                             } else if action == "scan_iv" {
                                 print("[STATUS] IV")
@@ -1857,6 +1788,30 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
 
                 }
             } else {
+                // Startup Check 3 - already logged in and app restarting.
+                let playerLogin = loginError()
+                Log.debug("login check 3...")
+                guard !playerLogin.error else {
+                    if playerLogin.authError == 2 {
+                        Log.error("Account \(username!) failed to log in. Getting a new account")
+                        postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_invalid_credentials"], blocking: true) { (result) in }
+                        username = nil
+                    }
+                    isLoggedIn = false
+                    sleep(2 * config.delayMultiplier)
+                    shouldExit = true
+                    return
+                }
+                // only happens when tutorial failed and restarted
+                let tutCheck = isTutorial()
+                if tutCheck.tutorial {
+                    Log.debug("Account has incomplete tutorial. Let's catch that pokemon!")
+                    isStarted = true
+                    newLogIn = true
+                    lastTestIndex = 4
+                    sleep(1 * config.delayMultiplier)
+                    return
+                }
                 let screenshotComp = getScreenshot()
 
                 if config.enableAccountManager && screenshotComp.rgbAtLocation(
@@ -1874,24 +1829,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     UserDefaults.standard.synchronize()
                     self.shouldExit = true
                     return
-                } else if failedLogin() {
-                    Log.error("Account \(username!) failed to log in. Getting a new account")
-                    deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
-                    username = nil
-                    isLoggedIn = false
-                    sleep(2 * config.delayMultiplier)
-                    shouldExit = true
-                    return
-                } else if isStartup() {
+                } else if isStartup() || screenCheck().status {
                     Log.info("App Started")
                     isStarted = true
                     sleep(1 * config.delayMultiplier)
 	            } else {
                     Log.debug("App still in Startup")
-                    if startupCount == 30 {
-                        Log.info("App stuck in Startup. Restarting...")
-                        app.terminate()
-                    }
                     startupCount += 1
                     sleep(1 * config.delayMultiplier)
                 }
@@ -1953,7 +1896,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         var startTryCount = 1
         while !started {
             do {
-                try self.server.start(onPort: UInt16(self.config.port))
+                try self.server.start(port: Int(self.config.port))
                 started = true
             } catch {
                 if startTryCount > 5 {
@@ -1965,10 +1908,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 sleep(5)
             }
         }
-        self.server.route(.get, "loc", self.handleLocRequest)
-        self.server.route(.post, "loc", self.handleLocRequest)
-        self.server.route(.get, "data", self.handleDataRequest)
-        self.server.route(.post, "data", self.handleDataRequest)
+        // Silence the build warnings with HTTPMethod 
+        self.server.route(HTTPMethod.GET, "loc", self.handleLocRequest)
+        self.server.route(HTTPMethod.POST, "loc", self.handleLocRequest)
+        self.server.route(HTTPMethod.GET, "data", self.handleDataRequest)
+        self.server.route(HTTPMethod.POST, "data", self.handleDataRequest)
 
         self.lock.lock()
         self.currentLocation = self.config.startupLocation

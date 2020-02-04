@@ -32,6 +32,9 @@ class DeviceRatio1775: DeviceConfigProtocol {
     var startup: DeviceCoordinate {
         return DeviceCoordinate(x: 280, y: 800, scaler: scaler)
     }
+    var cornerCheck: DeviceCoordinate {
+        return DeviceCoordinate(x: 2, y: 2, scaler: scaler)
+    }
     var startupLoggedOut: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 175, scaler: scaler)
     }
@@ -257,6 +260,14 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 375, y: 680, scaler: scaler)
     }
 
+    var loginAccountTimeout: DeviceCoordinate {
+        return DeviceCoordinate(x: 320, y: 393, scaler: scaler)
+    }
+
+    var loginAccountTimeoutButton: DeviceCoordinate {
+        return DeviceCoordinate(x: 178, y: 663, scaler: scaler)
+    }
+
     var loginBannedBackground: DeviceCoordinate {
         return DeviceCoordinate(x: 100, y: 900, scaler: scaler)
     }
@@ -336,7 +347,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
     }
 
     var tutorialStyleDone: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 610, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 600, scaler: scaler)
     }
 
     var tutorialCatchOk: DeviceCoordinate {
@@ -359,8 +370,12 @@ class DeviceRatio1775: DeviceConfigProtocol {
         return DeviceCoordinate(x: 320, y: 620, scaler: scaler)
     }
 
-    var tutorialProfessorCheck: DeviceCoordinate {
-        return DeviceCoordinate(x: 390, y: 866, scaler: scaler)
+    var tutorialProfessorCheeck: DeviceCoordinate {
+        return DeviceCoordinate(x: 440, y: 775, scaler: scaler)
+    }
+    
+    var willowPokestop: DeviceCoordinate {
+        return DeviceCoordinate(x: 170, y: 842, scaler: scaler)
     }
 
     var tutorialSelectY: Int {
