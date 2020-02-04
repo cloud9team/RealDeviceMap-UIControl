@@ -8,9 +8,9 @@
 import Foundation
 
 protocol DeviceConfigProtocol {
-    
+
     // MARK: - Startup
-    
+
     /** Green pixel in green button of startup popup. */
     var startup: DeviceCoordinate { get }
     /* pixel 2,2 on every device. Color is irrelevant - used to check startup condition */
@@ -33,9 +33,9 @@ protocol DeviceConfigProtocol {
     /** Startup and end location from scroll in Age Verification */
     var ageVerificationDragStart: DeviceCoordinate { get }
     var ageVerificationDragEnd: DeviceCoordinate { get }
-    /** ? pixel in ? of logged out. */ //TODO: - Where?
+    /** ? pixel in ? of logged out. */
     var passenger: DeviceCoordinate { get }
-    /** ? pixel in ? of weather popup */ //TODO: - Where?
+    /** ? pixel in ? of weather popup */
     var weather: DeviceCoordinate { get }
     /** Button to close weather popup Step 1. */
     var closeWeather1: DeviceCoordinate { get }
@@ -51,7 +51,7 @@ protocol DeviceConfigProtocol {
     var compareWarningR: DeviceCoordinate { get }
 	/** Trying to Fix The persisting Login Issue **/
 	var closeFailedLogin: DeviceCoordinate { get }
-    
+
     // MARK: - Misc
     /** Button to opten nenu. Also white pixel in Pokeball on main screen. */
     var closeMenu: DeviceCoordinate { get }
@@ -64,9 +64,8 @@ protocol DeviceConfigProtocol {
     /** Dark blue color of top right corner of logout scroll page . */
     var logoutDarkBluePageTopRight: DeviceCoordinate {get}
 
-    
     // MARK: - Logout
-    
+
     /** Button to open settings. */
     var settingsButton: DeviceCoordinate { get }
     /** Coord to start drag at for clicking logout. */
@@ -81,9 +80,9 @@ protocol DeviceConfigProtocol {
     var logoutDragStart2: DeviceCoordinate { get }
     /** Coord to end drag at for clicking logout for second time. */
     var logoutDragEnd2: DeviceCoordinate { get }
-    
+
     // MARK: - Pokemon Encounter
-    
+
     /** Coord to click at to enter Pokemon encounter. */
     var encounterPokemonUpper: DeviceCoordinate { get }
     var encounterPokemonUpperHigher: DeviceCoordinate { get }
@@ -101,9 +100,9 @@ protocol DeviceConfigProtocol {
     var encounterPokeball: DeviceCoordinate { get }
     /** Check White Pixel in AR button above Scroll bar of Toggel */
     var checkARPersistence: DeviceCoordinate { get }
-    
+
     // MARK: - Pokestop Encounter
-    
+
     /** Coord to click at to open Pokestop. */
     var openPokestop: DeviceCoordinate { get }
     /** Upper R logo on girl **/
@@ -113,9 +112,8 @@ protocol DeviceConfigProtocol {
     /** Invasion battle screen close **/
     var closeInvasion: DeviceCoordinate { get }
 
-    
     // MARK: - Quest Clearing
-    
+
     /** Open quests button. */
     var openQuest: DeviceCoordinate { get }
     /** First delete quests button. */
@@ -128,10 +126,9 @@ protocol DeviceConfigProtocol {
     var questFilledColorWithStack1: DeviceCoordinate { get }
     /** Green confirm quest deletion button */
     var questDeleteConfirm: DeviceCoordinate { get }
-    
-    
+
     // MARK: - Item Clearing
-    
+
     /** Open items button in menu. */
     var openItems: DeviceCoordinate { get }
     /** Increase delete item amount button. */
@@ -150,9 +147,9 @@ protocol DeviceConfigProtocol {
     var itemEggMenuItem: DeviceCoordinate { get }
     /** Tap Location for Egg Deployment */ 
     var itemEggDeploy: DeviceCoordinate { get }
-    
+
     // MARK: - Login
-    
+
     /** New player button. */
     var loginNewPlayer: DeviceCoordinate { get }
     /** Login with PTC button. */
@@ -200,9 +197,8 @@ protocol DeviceConfigProtocol {
     /** Green pixel in the OK button */
     var unableAuthButton: DeviceCoordinate { get }
 
-    
     // MARK: - Tutorial
-    
+
     /** Dark pixel in warning initial Tutorial screen on the left side. */
     var compareTutorialL: DeviceCoordinate { get }
     /** Dark pixel in warning initial Tutorial screen on the right side. */
@@ -226,7 +222,6 @@ protocol DeviceConfigProtocol {
     var tutorialProfessorCheeck: DeviceCoordinate { get }
     /** bright blue in pokestop icon on willow tutorial end screen */
     var willowPokestop: DeviceCoordinate { get }
-    
     /** Back Button in Bottom Left of Avatar Setup **/
     var tutorialBack: DeviceCoordinate { get }
     /** Center of the Item Menu in Avatar Customization **/
@@ -243,7 +238,7 @@ protocol DeviceConfigProtocol {
     var tutorialStyleBack: DeviceCoordinate { get }
     /** Pink Change button above avatar items when selecting new item **/
     var tutorialStyleChange: DeviceCoordinate { get }
-    
+
     var tutorialMaleStyleXs: [Int] { get }
     var tutorialFemaleStyleXs: [Int] { get }
     var tutorialPoseAndBackpackX: Int { get }
@@ -254,10 +249,9 @@ protocol DeviceConfigProtocol {
     var adventureSyncRewards: DeviceCoordinate { get }
     /** Green/Blue or Pixel in claim/close button of adventure sync popup */
     var adventureSyncButton: DeviceCoordinate { get }
-    
-    
+
     // MARK: - Team Select
-    
+
     /** Background of team select screen (left side) */
     var teamSelectBackgorundL: DeviceCoordinate { get }
     /** Background of team select screen (right side) */
