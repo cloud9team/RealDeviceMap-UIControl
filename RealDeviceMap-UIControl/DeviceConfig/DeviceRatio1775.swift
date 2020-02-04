@@ -377,7 +377,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
     var willowPokestop: DeviceCoordinate {
         return DeviceCoordinate(x: 170, y: 842, scaler: scaler)
     }
-    
+
     var tutorialSelectY: Int {
         return scaler.scaleY(y: 930)
     }
