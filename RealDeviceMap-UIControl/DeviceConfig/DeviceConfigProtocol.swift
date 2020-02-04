@@ -164,7 +164,7 @@ protocol DeviceConfigProtocol {
     var loginAccountTimeout: DeviceCoordinate { get }
     /** Green pixel left side of button towards edge*/
     var loginAccountTimeoutButton: DeviceCoordinate { get }
-    /** ? pixel in background of suspension notice */ //TODO: - Where?
+    /** ? pixel in background of suspension notice */
     var loginBannedBackground: DeviceCoordinate { get }
     /** Green pixel in "TRY A DIFFERENT ACCOUNT" button of "Failed to login" popup*/
     var loginBannedText: DeviceCoordinate { get }
