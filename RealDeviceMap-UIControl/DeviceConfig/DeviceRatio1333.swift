@@ -69,10 +69,10 @@ class DeviceRatio1333: DeviceConfigProtocol {
         return DeviceCoordinate(x: 768, y: 1700, scaler: scaler)
     }
     var compareWarningL: DeviceCoordinate {
-        return DeviceCoordinate(x: 90, y: 1800, scaler: scaler)
+        return DeviceCoordinate(x: 765, y: 213, scaler: scaler)
     }
     var compareWarningR: DeviceCoordinate {
-        return DeviceCoordinate(x: 1400, y: 1800, scaler: scaler)
+        return DeviceCoordinate(x: 1408, y: 1008, scaler: scaler)
     }
 	var closeFailedLogin: DeviceCoordinate {
 	    return DeviceCoordinate(x: 720, y: 1252, scaler: scaler)

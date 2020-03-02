@@ -31,7 +31,7 @@ protocol DeviceConfigProtocol {
     var ageVerificationDragEnd: DeviceCoordinate { get }
     /** ? pixel in ? of logged out. */ //TODO: - Where?
     var passenger: DeviceCoordinate { get }
-    /** red pixel in ! weather warning */ //TODO: - Where?
+    /** red pixel in ! weather warning */
     var weather: DeviceCoordinate { get }
     /** Button to close weather popup Step 1. */
     var closeWeather1: DeviceCoordinate { get }

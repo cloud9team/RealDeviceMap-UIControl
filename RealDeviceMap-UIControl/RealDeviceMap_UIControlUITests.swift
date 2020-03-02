@@ -881,10 +881,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                 let contents = jsonData!["contents"] as? [[String: Any]]
                 
                 for rawData in contents! {
-                    _ = rawData["data"] as? String
+                    let proto = rawData["data"] as? String
                     let method = rawData["method"] as? Int
                     Log.debug("**rawData method: \(method ?? 0)**")
-                
+                    Log.debug("**rawData proto: \(proto ?? "EMPTY")**")
                 }
                 
               }
@@ -1451,6 +1451,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                 }
                              ///////////////// end ultra quest skip ////////
                             } else if action == "switch_account" {
+                                self.currentLocation = self.config.startupLocation
 //////--------Switch account----------///////////////////
                                     let success = self.logOut()
                                     if !success {
