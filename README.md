@@ -18,9 +18,9 @@ Install Instructions:
 9. Run a test build to make sure the app compiles and runs without errors.
 10. Exit xcode, Back in terminal `cd manager`
 11. Build manager `swift run RDM-UIC-Manager`
-12. Wait about 2 minutes, after all of the manager dependencies are downloaded and the terminial is stick on XcodeBuildservice
-13. ctrl+c then `swift run RDM-UIC-Manager` and themanager should start from there.
-
+12. Wait about 2 minutes, after all of the manager dependencies are downloaded and the terminial is stuck on XcodeBuildservice
+13. ctrl+c then `swift run RDM-UIC-Manager` and the manager should start from there.
+(Yes, ctrl+c is necessary for a full build...)
 If you have any issues, open an issue, PR's are welcome. There is still alot of room for improvement.
 
 RealDeviceMap-UIControl interacts with the iOS Device using Xcode UITesting.<br>
