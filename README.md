@@ -2,16 +2,16 @@
 
 <strong>The contents of this repo is a proof of concept and is for educational use only!</strong>
 
-RealDeviceMap-UIControl is a Device Controllers for the RealDeviceMap-Api (https://github.com/123FLO321/RealDeviceMap).
+RealDeviceMap-UIControl is a Device Controller for the RealDeviceMap-Api (https://github.com/123FLO321/RealDeviceMap).
 
 Install Instructions:
 
-1. Clone repo, `git checkout uic-ultra`
+1. Clone repo then checkout uic-ultra branch, `git checkout uic-ultra`
 2. Install Homebrew 
 `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 3. Install cococapods `sudo gem install cocoapods`
 4. Install setup tools `sudo easy_install setuptools`
-5. Instal requests `pip2 install requests`
+5. Install requests `pip2 install requests`
 6. Install project podfile `pod install`
 7. Open .xcworkspace file
 8. Fix signing inside xcode project
