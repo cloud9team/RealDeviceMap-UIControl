@@ -9,7 +9,6 @@ Manager/.build/
 Manager/Package.resolved
 
 # Pods
-Podfile.lock
 Pods/
 *.xcworkspace
 
