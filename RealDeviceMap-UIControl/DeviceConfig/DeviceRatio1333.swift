@@ -228,6 +228,14 @@ class DeviceRatio1333: DeviceConfigProtocol {
         return DeviceCoordinate(x: 768, y: 1296, scaler: scaler)
     }
     
+    var suspendedAccountcheck1: DeviceCoordinate {
+        return DeviceCoordinate(x: 190, y: 898, scaler: scaler)
+    }
+    
+    var suspendedAccountcheck2    : DeviceCoordinate {
+        return DeviceCoordinate(x: 370, y: 980, scaler: scaler)
+    }
+    
     var loginBannedBackground: DeviceCoordinate {
         return DeviceCoordinate(x: 189, y: 1551, scaler: scaler)
     }

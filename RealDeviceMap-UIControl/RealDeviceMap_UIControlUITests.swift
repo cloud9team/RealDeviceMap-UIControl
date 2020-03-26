@@ -379,6 +379,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         return
                     } else {
                         Log.debug("Could not find OK button.")
+                        deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
                     }
                 }
                 if screenshotComp.rgbAtLocation(
@@ -585,182 +586,6 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
         }
     }
     
-/*    func part5TutorialStart() {
-        
-        
-        if shouldExit || username == nil || !isLoggedIn || !config.enableAccountManager {
-            return
-        }
-        
-        if newLogIn {
-            
-            print("[STATUS] Tutorial")
-            
-            sleep(4 * config.delayMultiplier)
-            
-            if !isTutorial() {
-                Log.info("Tutorial already done. Restarting...")
-                self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "tutorial_done"], blocking: true) { (result) in }
-                newCreated = true
-                newLogIn = false
-                app.launch()
-                sleep(1 * config.delayMultiplier)
-                
-                return
-            }
-			
-            let normalized = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
-            
-            Log.tutorial("Solving Tutorial for \(username!)")
-            
-            /* Start Reworked Changes Here */
-            /* 9 clicks to get through initial Willow Speech */
-            for _ in 1...9 {
-                deviceConfig.tutorialNext.toXCUICoordinate(app: app).tap()
-                usleep(UInt32(1500000 * config.delayMultiplier))
-            }
-            sleep(2 * config.delayMultiplier)
-            var gender:Bool = tutorialGenderSelection()
-            tutorialPhysicalFeature()
-            tutorialStyleSelection(gender)
-            Log.tutorial("Begin Willow Encounter Speech")
-            deviceConfig.tutorialNext.toXCUICoordinate(app: app).tap()
-            usleep(UInt32(1500000 * config.delayMultiplier))
-            deviceConfig.tutorialNext.toXCUICoordinate(app: app).tap()
-            sleep(3 * config.delayMultiplier)
-            Log.tutorial("Willow Encounter Speech Ended, Beginning search for Encounter")
-
-            while !findAndClickPokemon() {
-                app.swipeLeft()
-            }
-            // Add Pixel Check to check for AR+ Settings and do not tap if on, else clear it //
-            
-            sleep(6 * config.delayMultiplier)
-            
-            let ConfirmARScreenshot = XCUIScreen.main.screenshot()
-            Log.tutorial("Checking for AR+ Mode")
-            if !ConfirmARScreenshot.rgbAtLocation(
-                pos: deviceConfig.checkARPersistence,
-                min: (red: 0.94, green: 0.94, blue: 0.94),
-                max: (red: 1.0, green: 1.0, blue: 1.0)) {
-                Log.tutorial("AR Mode Prompts detected, Closing and Disabling")
-                sleep(4 * config.delayMultiplier)
-                deviceConfig.encounterNoAR.toXCUICoordinate(app: app).tap()
-                sleep(2 * config.delayMultiplier)
-                deviceConfig.encounterNoARConfirm.toXCUICoordinate(app: app).tap()
-                sleep(3 * config.delayMultiplier)
-                deviceConfig.encounterTmp.toXCUICoordinate(app: app).tap()
-                
-            }
-            sleep(3 * config.delayMultiplier)
-            Log.tutorial("AR+ Disabled")
-            
-            var CaptureAttempts: Int = 0
-            var Captured: Bool = false
-            
-            while !Captured {
-                
-                for _ in 1...5 {
-                    app.swipeUp()
-                    sleep(3 * config.delayMultiplier)
-                }
-                sleep(10 * config.delayMultiplier)
-                
-                let screenshotComp = XCUIScreen.main.screenshot()
-                
-                if screenshotComp.rgbAtLocation(
-                    pos: deviceConfig.tutorialStyleDone,
-                    min: (red: 0.95, green: 0.99, blue: 0.94),
-                    max: (red: 0.98, green: 1.00, blue: 0.96)) {
-                    
-                    sleep(1 * config.delayMultiplier)
-                    deviceConfig.tutorialCatchOk.toXCUICoordinate(app: app).tap()
-                    sleep(7 * config.delayMultiplier)
-                    deviceConfig.tutorialCatchClose.toXCUICoordinate(app: app).tap()
-                    sleep(3 * config.delayMultiplier)
-                    
-                Captured = true
-                } else {
-                    CaptureAttempts += 1
-                    if CaptureAttempts > 3 {
-                        Log.tutorial("ERROR 26 is the devil")
-                        postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_warning"], blocking: true) { (result) in }
-                        app.terminate()
-                        
-                    }
-                }
-            }
-            
-            
-            for _ in 1...2 {
-                deviceConfig.tutorialNext.toXCUICoordinate(app: app).tap()
-                sleep(1 * config.delayMultiplier)
-            }
-            
-        }
-        
-    }
-    
-    func part6TutorialUsername() {
-        
-        if shouldExit || username == nil || !isLoggedIn || !config.enableAccountManager {
-            return
-        }
-        
-        if newLogIn {
-            app.typeText(username!)
-            
-        }
-    }
-    
-    
-    func part7TutorialEnd() {
-        
-        if shouldExit || username == nil || !isLoggedIn || !config.enableAccountManager {
-            return
-        }
-        
-        if newLogIn {
-            
-            sleep(2 * config.delayMultiplier)
-            deviceConfig.tutorialKeybordDone.toXCUICoordinate(app: app).tap()
-            sleep(1 * config.delayMultiplier)
-            deviceConfig.tutorialUsernameOk.toXCUICoordinate(app: app).tap()
-            sleep(5 * config.delayMultiplier)
-            deviceConfig.tutorialUsernameConfirm.toXCUICoordinate(app: app).tap()
-            sleep(5 * config.delayMultiplier)
-            
-            var Completed = false
-            
-            while !Completed {
-                
-                let screenshotComp = XCUIScreen.main.screenshot()
-                
-                if screenshotComp.rgbAtLocation(
-                pos: deviceConfig.tutorialProfessorCheck,
-                min: (red: 0.85, green: 0.95, blue: 0.00),
-                max: (red: 0.92, green: 1.00, blue: 0.05)) {
-                    Log.tutorial("Tapping Willow on Pokestop Introduction")
-                    deviceConfig.tutorialNext.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else {
-                    Log.tutorial("Willow Prompt Completed!")
-                    Completed = true
-                }
-            }
-            
-            sleep(1 * config.delayMultiplier)
-            deviceConfig.tutorialNext.toXCUICoordinate(app: app).tap()
-            
-            Log.info("Tutorial Done. Restarting...")
-            self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "tutorial_done"], blocking: true) { (result) in }
-            newCreated = true
-            newLogIn = false
-            app.launch()
-            sleep(1 * config.delayMultiplier)
-        }
-        
-    } */
     
     func handleLocRequest(request: HTTPRequest) -> HTTPResponse  {
         
@@ -873,6 +698,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             let contents = jsonData!["contents"] as? [[String: Any]]
             for rawData in contents! {
                 let method = rawData["method"] as? Int
+                Log.debug("**rawData method: \(method ?? 0)**")
                 if method == 102 {
                     self.encounterCount += 1
                 }
@@ -884,10 +710,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     let proto = rawData["data"] as? String
                     let method = rawData["method"] as? Int
                     Log.debug("**rawData method: \(method ?? 0)**")
-                    Log.debug("**rawData proto: \(proto ?? "EMPTY")**")
+                  //  Log.debug("**rawData proto: \(proto ?? "EMPTY")**")
                 }
                 
-              }
+            }
             let url = self.backendRawURL
             
             self.postRequest(url: url!, data: jsonData!, blocking: false, completion: { (resultJson) in
@@ -1525,6 +1351,21 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                             // Reset Counter. kick error to logs/don't kill app    
                             }
                             if failedCount >= self.config.maxFailedCount {
+                                
+                                    Log.error("Exceeded Failed Count  \(failedCount). Increase Max Failed Count or Check Accouunt Status.")
+                                if self.checkSuspended() {
+                                    self.firstWarningDate = Date()
+                                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "account_warning"], blocking: true) { (result) in }
+
+                                    self.app.activate()
+                                    sleep(8)
+                                    self.deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: self.app).tap()
+                                    sleep(2)
+                                    self.app.terminate()
+                                    self.shouldExit = true
+                                    
+                                }
+                                
                                 Log.error("Exceeded Failed Count  \(failedCount). Increase Max Failed Count or Check Accouunt Status.")
                                 failedCount = 0
                             // Reset Counter. kick error to logs/don't kill app

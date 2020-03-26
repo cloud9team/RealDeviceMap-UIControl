@@ -148,6 +148,10 @@ protocol DeviceConfigProtocol {
     var loginConfirm: DeviceCoordinate { get }
     /** ? pixel in background of suspension notice */ //TODO: - Where?
     var loginBannedBackground: DeviceCoordinate { get }
+    /** Bright yellow in P of Pokemon on bottom of screen */
+    var suspendedAccountcheck1: DeviceCoordinate { get }
+    /** Blue in top half of GO under Pokemon */
+    var suspendedAccountcheck2: DeviceCoordinate { get }
     /** Green pixel in "TRY A DIFFERENT ACCOUNT" button of "Failed to login" popup*/
     var loginBannedText: DeviceCoordinate { get }
     /** Green pixel left side "Retry" button of "Failed to login" popup*/
