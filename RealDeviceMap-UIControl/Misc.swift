@@ -194,16 +194,58 @@ extension XCTestCase {
          }
         return false
     }
+    func checkTos(screenshot: XCUIScreenshot?=nil) -> Bool {
+        
+        let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
+        if (screenshotComp.rgbAtLocation(
+                pos: deviceConfig.loginTerms,
+                min: (red: 0.0, green: 0.75, blue: 0.55),
+                max: (red: 1.0, green: 0.90, blue: 0.70)) &&
+                screenshotComp.rgbAtLocation(
+                    pos: deviceConfig.loginTermsText,
+                    min: (red: 0.0, green: 0.0, blue: 0.0),
+                    max: (red: 0.3, green: 0.5, blue: 0.5)) ) {
+            Log.debug("Accepting Terms")
+            deviceConfig.loginTerms.toXCUICoordinate(app: app).tap()
+            sleep(2 * config.delayMultiplier)
+            return true
+        } else if (screenshotComp.rgbAtLocation(
+                pos: deviceConfig.loginTerms2,
+                min: (red: 0.0, green: 0.75, blue: 0.55),
+                max: (red: 1.0, green: 0.90, blue: 0.70)) &&
+                screenshotComp.rgbAtLocation(
+                    pos: deviceConfig.loginTerms2Text,
+                    min: (red: 0.0, green: 0.0, blue: 0.0),
+                    max: (red: 0.3, green: 0.5, blue: 0.5)) ) {
+            Log.debug("Accepting Updated Terms.")
+            deviceConfig.loginTerms2.toXCUICoordinate(app: app).tap()
+            sleep(2 * config.delayMultiplier)
+            return true
+        } else if (screenshotComp.rgbAtLocation(
+                pos: deviceConfig.loginPrivacy,
+                min: (red: 0.0, green: 0.75, blue: 0.55),
+                max: (red: 1.0, green: 0.90, blue: 0.70)) &&
+                screenshotComp.rgbAtLocation(
+                    pos: deviceConfig.loginPrivacyText,
+                    min: (red: 0.0, green: 0.75, blue: 0.55),
+                    max: (red: 1.0, green: 0.90, blue: 0.70)) ) {
+            Log.debug("Accepting Privacy.")
+            deviceConfig.loginPrivacy.toXCUICoordinate(app: app).tap()
+            sleep(2 * config.delayMultiplier)
+            return true
+        }
+        return false
+    }
     
     func checkSuspended(screenshot: XCUIScreenshot?=nil) -> Bool {
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
         if screenshotComp.rgbAtLocation(pos: deviceConfig.suspendedAccountcheck1,
             min: (red: 0.8, green: 0.75, blue: 0.01),
             max: (red: 1.0, green: 0.85, blue: 0.1)) &&
-                screenshotComp.rgbAtLocation(pos: deviceConfig.suspendedAccountcheck1,
+                screenshotComp.rgbAtLocation(pos: deviceConfig.suspendedAccountcheck2,
                 min: (red: 0.01, green: 0.09, blue: 0.2),
                 max: (red: 0.1, green: 0.16, blue: 0.4)) {
-            
+                Log.debug("Account Suspended.")
                 return true
             
         }

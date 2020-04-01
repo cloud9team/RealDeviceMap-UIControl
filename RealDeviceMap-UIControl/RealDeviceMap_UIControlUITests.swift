@@ -349,54 +349,59 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
        // self.currentLocation = self.config.startupLocation
        // self.lock.unlock()
        // Log.debug("Set startup location to \(self.currentLocation ?? nil)")
-        if !config.enableAccountManager {
-            lastTestIndex = 7
-            return
-        }
         if shouldExit {
             return
         }
-        if username != nil && !isLoggedIn {
+        if (username != nil && !isLoggedIn) || !isLoggedIn {
             
             print("[STATUS] Login")
-            
+            Log.debug("Waiting 5 seconds for app to load")
+            sleep(5)
             var loaded = false
             var count = 0
             while !loaded {
-                guard count < 61 else {
+                guard count < 60 else {
                     Log.error("Login timed out. Restarting...")
                     shouldExit = true
                     return
                 }
                 let screenshotComp = XCUIScreen.main.screenshot()
-                if screenshotComp.rgbAtLocation(pos: deviceConfig.cornerTest, min: (red: 0.27, green: 0.68, blue: 0.49), max: (red: 0.30, green: 0.73, blue: 0.53)) {
+                /*if screenshotComp.rgbAtLocation(pos: deviceConfig.cornerTest, min: (red: 0.27, green: 0.68, blue: 0.49), max: (red: 0.30, green: 0.73, blue: 0.53)) {
                     Log.startup("Possible Banned or Invalid Credentials")
                     if screenshotComp.rgbAtLocation(pos: deviceConfig.logoutConfirm, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
                         deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
                         Log.debug("Attempting logout.")
                         sleep(2)
-                        app.terminate()
+                        self.app.activate()
+                        deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
                         return
                     } else {
                         Log.debug("Could not find OK button.")
                         deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
                     }
-                }
-                if screenshotComp.rgbAtLocation(
-                    pos: self.deviceConfig.startup,
-                    min: (red: 0.0, green: 0.75, blue: 0.55),
-                    max: (red: 1.0, green: 0.90, blue: 0.70)) {
-                    Log.info("Tried to log in but already logged in.")
-                    needsLogout = true
-                    isLoggedIn = true
-                    newLogIn = false
-                    return
-                } else if screenshotComp.rgbAtLocation(
+                } */
+                 if screenshotComp.rgbAtLocation(
                     pos: self.deviceConfig.startupLoggedOut,
                     min: (0.95, 0.75, 0.0),
                     max: (1.00, 0.85, 0.1)) {
                     Log.debug("App Started in login screen.")
                     loaded = true
+                    isLoggedIn = false
+                } else if isStartup() || checkTos() {
+                    isLoggedIn = true
+                    return
+                 } else if checkSuspended() {
+                    self.firstWarningDate = Date()
+                    
+                    self.app.activate()
+                    sleep(8)
+                    self.deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: self.app).tap()
+                    sleep(2)
+                    self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "username": self.username as Any, "type": "account_warning"], blocking: true) { (result) in }
+
+                    self.app.terminate()
+                    self.shouldExit = true
+                    return
                 } else {
                     count += 1
                     sleep(2 * config.delayMultiplier)
@@ -435,11 +440,12 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     
     func part2LoginUsername() {
         
-        if shouldExit || !config.enableAccountManager {
+        if shouldExit || !config.enableAccountManager || isLoggedIn {
             return
         }
+        //add screen check here
         
-        if username != nil && !isLoggedIn {
+        if username != nil {
             Log.debug("Entering account details for: \(username ?? "No username")")
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginUsernameTextfield.toXCUICoordinate(app: app).tap()
@@ -451,11 +457,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     
     func part3LoginPassword() {
         
-        if shouldExit || !config.enableAccountManager {
+        if shouldExit || !config.enableAccountManager || isLoggedIn {
             return
         }
-        
-        if username != nil && !isLoggedIn {
+        // add screencheck here
+        if username != nil {
             Log.debug("Entering password for: \(username ?? "No username")")
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginPasswordTextfield.toXCUICoordinate(app: app).tap()
@@ -468,13 +474,13 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     
     func part4LoginEnd() {
         
-        if shouldExit || !config.enableAccountManager {
+        if shouldExit || !config.enableAccountManager || isLoggedIn {
             return
         }
 
 
 
-        if username != nil && !isLoggedIn {
+        if username != nil {
             
             sleep(1 * config.delayMultiplier)
             deviceConfig.loginConfirm.toXCUICoordinate(app: app).tap()
@@ -482,9 +488,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
             
             var loggedIn = false
             var count = 0
-            
+            sleep(5)
             while !loggedIn {
-                guard count < 61 else {
+                guard count < 60 else {
                     Log.error("Login timed out. Restarting...")
                     shouldExit = true
                     return
@@ -517,45 +523,9 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     app.launch()
                     sleep(10 * config.delayMultiplier)
                     self.invalid = true
-                } else if (
-                    screenshotComp.rgbAtLocation(
-                        pos: deviceConfig.loginTerms,
-                        min: (red: 0.0, green: 0.75, blue: 0.55),
-                        max: (red: 1.0, green: 0.90, blue: 0.70)) &&
-                        screenshotComp.rgbAtLocation(
-                            pos: deviceConfig.loginTermsText,
-                            min: (red: 0.0, green: 0.0, blue: 0.0),
-                            max: (red: 0.3, green: 0.5, blue: 0.5))
-                    ) {
-                    Log.debug("Accepting Terms")
-                    deviceConfig.loginTerms.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if (
-                    screenshotComp.rgbAtLocation(
-                        pos: deviceConfig.loginTerms2,
-                        min: (red: 0.0, green: 0.75, blue: 0.55),
-                        max: (red: 1.0, green: 0.90, blue: 0.70)) &&
-                        screenshotComp.rgbAtLocation(
-                            pos: deviceConfig.loginTerms2Text,
-                            min: (red: 0.0, green: 0.0, blue: 0.0),
-                            max: (red: 0.3, green: 0.5, blue: 0.5))
-                    ) {
-                    Log.debug("Accepting Updated Terms.")
-                    deviceConfig.loginTerms2.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
-                } else if (
-                    screenshotComp.rgbAtLocation(
-                        pos: deviceConfig.loginPrivacy,
-                        min: (red: 0.0, green: 0.75, blue: 0.55),
-                        max: (red: 1.0, green: 0.90, blue: 0.70)) &&
-                        screenshotComp.rgbAtLocation(
-                            pos: deviceConfig.loginPrivacyText,
-                            min: (red: 0.0, green: 0.75, blue: 0.55),
-                            max: (red: 1.0, green: 0.90, blue: 0.70))
-                    ) {
-                    Log.debug("Accepting Privacy.")
-                    deviceConfig.loginPrivacy.toXCUICoordinate(app: app).tap()
-                    sleep(2 * config.delayMultiplier)
+                } else if checkTos() {
+                    loggedIn = true
+                    isLoggedIn = true
                 } else if (
                     screenshotComp.rgbAtLocation(
                         pos: deviceConfig.loginFailed,
@@ -572,7 +542,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     postRequest(url: backendControlerURL, data: ["uuid": config.uuid, "username": self.username as Any, "type": "account_invalid_credentials"], blocking: true) { (result) in }
                     shouldExit = true
                     return
-                } else if ( isStartup() ) {
+                } else if isStartup() {
                     loggedIn = true
                     isLoggedIn = true
                     Log.info("Logged in as \(username!)")
@@ -710,7 +680,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     let proto = rawData["data"] as? String
                     let method = rawData["method"] as? Int
                     Log.debug("**rawData method: \(method ?? 0)**")
-                  //  Log.debug("**rawData proto: \(proto ?? "EMPTY")**")
+                    Log.debug("**rawData proto: \(proto ?? "EMPTY")**")
                 }
                 
             }
@@ -2551,3 +2521,4 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
     }
     
 }
+

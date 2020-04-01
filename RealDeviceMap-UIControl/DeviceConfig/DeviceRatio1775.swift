@@ -213,11 +213,11 @@ class DeviceRatio1775: DeviceConfigProtocol {
     // MARK: - Login
     
     var loginNewPlayer: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 785, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 790, scaler: scaler)
     }
     
     var loginPTC: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 800, scaler: scaler)
+        return DeviceCoordinate(x: 320, y: 700, scaler: scaler)
     }
     
     var loginUsernameTextfield: DeviceCoordinate {
