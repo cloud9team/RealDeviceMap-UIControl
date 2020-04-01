@@ -424,6 +424,12 @@ class DeviceRatio1333: DeviceConfigProtocol {
     var enableAdventureSync: DeviceCoordinate {
         return DeviceCoordinate(x: 320, y: 330, scaler: scaler)
     }
+    var adventureSyncRewardsL: DeviceCoordinate {
+    return DeviceCoordinate(x: 230, y: 284, scaler: scaler)
+    }
+    var adventureSyncRewardsR: DeviceCoordinate {
+        return DeviceCoordinate(x: 230, y: 410, scaler: scaler)
+    }
     var enableAdventureSyncClose: DeviceCoordinate {
         return DeviceCoordinate(x: 310, y: 814, scaler: scaler)
     }

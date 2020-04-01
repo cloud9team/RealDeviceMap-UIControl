@@ -870,10 +870,10 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                     }
                     
                     sleep(2 * config.delayMultiplier)
-                    self.freeScreen()
+                    
                     deviceConfig.closeNews.toXCUICoordinate(app: app).tap()
                     sleep(1 * config.delayMultiplier)
-                    self.freeScreen()
+                    
                     sleep(1 * config.delayMultiplier)
                     ////////////////// ultra quest, so skip //////////////
                     if !self.config.ultraQuests {
@@ -1392,6 +1392,11 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                         return
                 } else if isStartup(click: 1) {
                     Log.info("App Started")
+                    if adventureSync() {
+                        Log.debug("Collecting Adventure Sync Rewards...")
+                        sleep(1 * config.delayMultiplier)
+                        deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
+                    }
                     isStarted = true
                     sleep(1 * config.delayMultiplier)
 	            } else {

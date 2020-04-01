@@ -226,6 +226,10 @@ protocol DeviceConfigProtocol {
     // MARK: - Adventure Sync
     /** Pink Pixel in background of "Rewards" in adventure sync popup */
     var adventureSyncRewards: DeviceCoordinate { get }
+    /** Pink Pixel in background of "Rewards" in adventure sync popup */
+    var adventureSyncRewardsL: DeviceCoordinate { get }
+    /** Pink Pixel in background of "Rewards" in adventure sync popup */
+    var adventureSyncRewardsR: DeviceCoordinate { get }
     /** Green/Blue or Pixel in claim/close button of adventure sync popup */
     var adventureSyncButton: DeviceCoordinate { get }
     /** Pink pixel in Enable Adventure Sync popup */

@@ -237,6 +237,21 @@ extension XCTestCase {
         return false
     }
     
+    func adventureSync(screenshot: XCUIScreenshot?=nil) -> Bool {
+        
+        let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
+        if screenshotComp.rgbAtLocation(
+            pos: deviceConfig.adventureSyncRewardsL,
+            min: (red: 0.98, green: 0.3, blue: 0.45),
+            max: (red: 1.00, green: 0.5, blue: 0.60)) &&
+            screenshotComp.rgbAtLocation(
+                pos: deviceConfig.adventureSyncRewardsR,
+                min: (red: 0.98, green: 0.3, blue: 0.45),
+                max: (red: 1.00, green: 0.5, blue: 0.60)) {
+            return true
+        }
+        return false
+    }
     func checkSuspended(screenshot: XCUIScreenshot?=nil) -> Bool {
         let screenshotComp = screenshot ?? XCUIScreen.main.screenshot()
         if screenshotComp.rgbAtLocation(pos: deviceConfig.suspendedAccountcheck1,
