@@ -213,7 +213,7 @@ class DeviceRatio1333: DeviceConfigProtocol {
     }
     
     var loginPTC: DeviceCoordinate {
-        return DeviceCoordinate(x: 768, y: 1365, scaler: scaler)
+        return DeviceCoordinate(x: 768, y: 1260, scaler: scaler)
     }
     
     var loginUsernameTextfield: DeviceCoordinate {
