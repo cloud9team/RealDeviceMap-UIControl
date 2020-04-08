@@ -974,7 +974,7 @@ class RealDeviceMap_UIControlUITests: XCTestCase {
                                         locked = false
                                         self.waitForData = false
                                         failedCount += 1
-                                        self.freeScreen()
+                                        //self.freeScreen()
                                         Log.debug("Pokemon loading timed out.")
                                         self.postRequest(url: self.backendControlerURL, data: ["uuid": self.config.uuid, "type": "job_failed", "action": action, "lat": lat, "lon": lon], blocking: true) { (result) in }
                                         

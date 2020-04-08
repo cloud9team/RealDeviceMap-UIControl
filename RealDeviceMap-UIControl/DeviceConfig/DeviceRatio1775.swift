@@ -249,7 +249,7 @@ class DeviceRatio1775: DeviceConfigProtocol {
     }
     
     var loginBanned: DeviceCoordinate {
-        return DeviceCoordinate(x: 320, y: 585, scaler: scaler)
+        return DeviceCoordinate(x: 178, y: 570, scaler: scaler)
     }
     
     var loginBannedSwitchAccount: DeviceCoordinate {

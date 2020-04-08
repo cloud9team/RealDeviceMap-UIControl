@@ -103,7 +103,20 @@ class CLI {
         }
         
     }
-    
+   /* private func quit() {
+        
+        clear()
+        class Bundle : NSObject {
+        var bunde =  Bundle.main.bundleIdentifier
+        }
+        let devices = Device.getAll()
+        for device in devices {
+            app.exit(-1)
+            
+        }
+        run = false
+        Threading.destroyQueue(queue)
+    } */
     private func status() {
         clear()
         var run = true

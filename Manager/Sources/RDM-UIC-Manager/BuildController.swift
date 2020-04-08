@@ -221,7 +221,7 @@ class BuildController {
                 self.setStatus(uuid: device.uuid, dateStarted: timestamp, status: "Building")
             
                
-                let fullLog = FileLogger(file: "./logs/\(device.name)-\(timestamp)-xcodebuild.full.log")
+              //  let fullLog = FileLogger(file: "./logs/\(device.name)-\(timestamp)-xcodebuild.full.log")
                 let debugLog = FileLogger(file: "./logs/\(device.name)-\(timestamp)-xcodebuild.debug.log")
             
                 task = xcodebuild.run(outputPipe: outputPipe, errorPipe: errorPipe)
@@ -310,7 +310,7 @@ class BuildController {
                         }
 
             
-                        fullLog.uic(message: string!, all: true)
+                      //  fullLog.uic(message: string!, all: true)
                         debugLog.uic(message: string!, all: false)
                         lastChangedLock.lock()
                         lastChanged = Date()
@@ -320,7 +320,7 @@ class BuildController {
                 errorPipe.fileHandleForReading.readabilityHandler = { fileHandle in
                     let string = String(data: fileHandle.availableData, encoding: .utf8)
                     if string != nil && string!.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
-                        fullLog.uic(message: string!, all: true)
+                      //  fullLog.uic(message: string!, all: true)
                         debugLog.uic(message: string!, all: false)
                         lastChangedLock.lock()
                         lastChanged = Date()

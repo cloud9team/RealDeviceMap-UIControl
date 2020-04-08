@@ -188,8 +188,16 @@ extension XCTestCase {
                     Log.debug("Cleared two-three line warning.")
                 }
                 return true
-            } else {
+        
+        } else {
+                if screenshotComp.rgbAtLocation(pos: deviceConfig.loginBanned, min: (red: 0.61, green: 0.83, blue: 0.56), max: (red: 0.66, green: 0.87, blue: 0.61)) {
+                    deviceConfig.loginBannedSwitchAccount.toXCUICoordinate(app: app).tap()
+                    Log.debug("Account failed. Logging out...")
+        
+                    return true
+                } else {
                     Log.debug("Could not find OK button.")
+                }
             }
          }
         return false
@@ -295,38 +303,7 @@ extension XCTestCase {
                 sleep(1 * config.delayMultiplier)
             }
         }
-        Log.debug("Checking for adventure sync rewards")
-        if screenshot.rgbAtLocation(
-            pos: deviceConfig.adventureSyncRewards,
-            min: (red: 0.98, green: 0.3, blue: 0.45),
-            max: (red: 1.00, green: 0.5, blue: 0.60)
-        ) {
-            if self.config.verbose {
-                Log.debug("Pixel color test range allowed(R:.4-.5 G:.8-.9 B:.5-.7) Result----")
-                Log.debug("rgbAtLocation(adventureSyncButton): \(screenshot.rgbAtLocation(pos: deviceConfig.adventureSyncButton))")
-                
-            }
-            if screenshot.rgbAtLocation(
-                pos: deviceConfig.adventureSyncButton,
-                min: (red: 0.40, green: 0.80, blue: 0.50),
-                max: (red: 0.50, green: 0.90, blue: 0.70)
-            ) {
-                Log.debug("Collecting AdventureSync rewards")
-                deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
-                sleep(2 * config.delayMultiplier)
-                deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
-                sleep(2 * config.delayMultiplier)
-                screenshot = clickPassengerWarning()
-            } else if screenshot.rgbAtLocation(
-                pos: deviceConfig.adventureSyncButton,
-                min: (red: 0.05, green: 0.45, blue: 0.50),
-                max: (red: 0.20, green: 0.60, blue: 0.65)
-            ) {
-                deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
-                sleep(2 * config.delayMultiplier)
-                screenshot = clickPassengerWarning()
-            }
-        }
+        
         if !self.config.ultraIV {
             if screenshot.rgbAtLocation(
                 pos: deviceConfig.teamSelectBackgorundL,
@@ -438,6 +415,11 @@ extension XCTestCase {
             Log.debug("Closing warning screen.")
             deviceConfig.closeWarning.toXCUICoordinate(app: app).tap()
             sleep(1 * config.delayMultiplier)
+        }
+        if adventureSync() {
+            Log.debug("Collecting Adventure Sync Rewards...")
+            sleep(1 * config.delayMultiplier)
+            deviceConfig.adventureSyncButton.toXCUICoordinate(app: app).tap()
         }
         let normalized = app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0))
         var found = false
